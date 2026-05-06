@@ -98,6 +98,33 @@
     font-weight: 500;
     letter-spacing: 0.1px;
   }
+  .sentence.prompt {
+    text-align: center;
+    padding: 18px 0 8px;
+  }
+  .sentence .prompt-word {
+    display: block;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+  }
+  .sentence .prompt-ipa {
+    display: block;
+    font-family: "Charis SIL", "Doulos SIL", "Lucida Sans Unicode", serif;
+    color: var(--soft);
+    font-size: 17px;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  .sentence .prompt-instr {
+    display: block;
+    color: var(--soft);
+    font-size: 13px;
+    font-weight: 400;
+    margin-top: 12px;
+    font-style: italic;
+  }
   .sentence .blank {
     display: inline-block;
     min-width: 110px;
@@ -260,10 +287,100 @@
     transition: width 300ms ease;
   }
 
+  /* ---- Lists popover (multi-select) ---- */
+  .lists-wrap { position: relative; }
+  .lists-popover {
+    position: absolute;
+    top: 38px;
+    left: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    width: 340px;
+  }
+  .lists-popover.hidden { display: none; }
+  .lists-popover .lists-actions { display: flex; gap: 6px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .lists-popover .lists-actions button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .lists-popover .lists-actions button:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .lists-popover .lists-actions button.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    margin-left: auto;
+  }
+  .lists-popover .lists-actions button.primary:hover { background: #248471; }
+  .lists-section { margin-bottom: 8px; }
+  .lists-section label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .lists-section-title {
+    color: var(--soft);
+    font-size: 11px;
+    margin: 10px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+  }
+  .lists-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px 6px;
+    font-size: 12px;
+  }
+  .lists-grid label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 2px 3px;
+    border-radius: 4px;
+  }
+  .lists-grid label:hover { background: var(--accent-soft); color: var(--accent); }
+  .lists-grid input { margin: 0; }
+  .lists-range-helpers { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .lists-range-helpers button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--soft);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .lists-range-helpers button:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+  /* ---- Finished screen ---- */
+  .finished-screen { text-align: center; padding: 30px 10px 10px; }
+  .finished-screen .icon { font-size: 48px; margin-bottom: 8px; }
+  .finished-screen h2 { margin: 0 0 8px; color: var(--accent); font-size: 22px; }
+  .finished-screen .sub { color: var(--soft); margin-bottom: 22px; font-size: 15px; }
+  .finished-screen .finish-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
   @media (max-width: 540px) {
     .sentence { font-size: 18px; }
     .reveal-block .word { font-size: 24px; }
     header h1 { font-size: 18px; }
+    .lists-popover { width: 92vw; max-width: 320px; }
+    .lists-grid { grid-template-columns: repeat(5, 1fr); }
   }
 </style>
 </head>
@@ -294,7 +411,7 @@
 
   <div class="help" id="help">
     <span class="close" onclick="document.getElementById('help').style.display='none'">×</span>
-    <b>How to practice:</b> Read the sentence and pick the word from the four similar choices below. Wrong picks are auto-flagged as <b>still learning</b> and come back more often. Switch to <b>Cloze recall</b> mode if you want to recall without choices. Press <kbd>→</kbd> for the next word.
+    <b>How to practice:</b> Read the sentence and pick the word from the four similar choices below. Wrong picks are auto-flagged as <b>still learning</b>. Tap <b>I know it</b> or <b>Still learning</b> to mark and move on. Each pass shows every word in the selected lists exactly once — when you're done, you'll see a finished screen. Press <kbd>→</kbd> for the next word.
   </div>
 
   <div class="controls">
@@ -304,15 +421,36 @@
       <option value="unmarked">Only unmarked</option>
       <option value="hassent">Only with example sentence</option>
     </select>
-    <select id="listRange" title="List range">
-    </select>
+    <div class="lists-wrap">
+      <button id="listsBtn" title="Pick which lists to practice">Lists: All</button>
+      <div id="listsPopover" class="lists-popover hidden">
+        <div class="lists-actions">
+          <button type="button" id="listsAll">Select all</button>
+          <button type="button" id="listsNone">Clear</button>
+          <button type="button" id="listsApply" class="primary">Apply</button>
+        </div>
+        <div class="lists-section">
+          <label><input type="checkbox" id="cbLesson1" data-list="0"> Lesson 1 spotlight (15 words)</label>
+        </div>
+        <div class="lists-section-title">Core lists 1–214</div>
+        <div class="lists-range-helpers" id="listsRangeHelpers"></div>
+        <div class="lists-grid" id="listsGrid"></div>
+      </div>
+    </div>
     <select id="mode" title="Practice mode">
-      <option value="choice">Multiple choice (easier)</option>
-      <option value="cloze">Cloze recall (no choices)</option>
-      <option value="defcloze">Definition cloze</option>
+      <optgroup label="Sentence → word">
+        <option value="choice">Multiple choice</option>
+        <option value="cloze">Recall (no choices)</option>
+        <option value="defcloze">Definition cloze</option>
+      </optgroup>
+      <optgroup label="Word → meaning">
+        <option value="wordChoice">Multiple choice</option>
+        <option value="wordRecall">Recall (no choices)</option>
+      </optgroup>
       <option value="review">Review (no quiz)</option>
     </select>
-    <button id="resetMarks" title="Clear all your progress marks">Reset progress</button>
+    <button id="resetSet" title="Clear known/learning marks for the lists currently selected">Reset this set</button>
+    <button id="resetMarks" title="Clear ALL your progress marks">Reset all</button>
   </div>
 
   <div class="progress"><div class="bar" id="bar"></div></div>
@@ -373,14 +511,25 @@ try {
   console.warn("localStorage unavailable — running in memory-only mode.");
 }
 
+function defaultState() {
+  return {
+    marks: {},
+    currentIndex: -1,
+    sessionViews: 0,
+    selectedLists: null,   // null = all lists; otherwise an array of list IDs (0 = Lesson 1)
+    seenInPass: [],        // words already shown in the current pass through the active set
+    activeSetSig: '',      // signature of the active set; used to detect filter/list changes
+    passComplete: false    // when true, render the finished screen
+  };
+}
 function loadState() {
-  if (!LS_OK) return { marks: {}, currentIndex: -1, sessionViews: 0 };
+  if (!LS_OK) return defaultState();
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return { marks: {}, currentIndex: -1, sessionViews: 0 };
-    return JSON.parse(raw);
+    if (!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
   } catch (e) {
-    return { marks: {}, currentIndex: -1, sessionViews: 0 };
+    return defaultState();
   }
 }
 function saveState() {
@@ -396,27 +545,81 @@ function saveState() {
 let state = loadState();
 
 // ---------- helpers ----------
-function listOptions() {
-  const sel = document.getElementById('listRange');
-  const opt0 = document.createElement('option'); opt0.value = "all"; opt0.textContent = "Any list"; sel.appendChild(opt0);
-  // Lesson 1 first
-  const lo = document.createElement('option');
-  lo.value = "only-0"; lo.textContent = "Lesson 1 spotlight (15 words)";
-  sel.appendChild(lo);
-  // group core lists into chunks of 10
-  for (let s = 1; s <= 214; s += 10) {
-    const e = Math.min(s + 9, 214);
-    const o = document.createElement('option');
-    o.value = `${s}-${e}`;
-    o.textContent = `Core lists ${s}–${e}`;
-    sel.appendChild(o);
-  }
-  // also: every individual list
+const ALL_LIST_IDS = (function () {
+  const ids = [0]; // 0 = Lesson 1
+  for (let i = 1; i <= 214; i++) ids.push(i);
+  return ids;
+})();
+
+// Build the multi-select checkbox UI inside #listsPopover (run once at init).
+function buildListsPicker() {
+  const grid = document.getElementById('listsGrid');
+  grid.innerHTML = '';
   for (let i = 1; i <= 214; i++) {
-    const o = document.createElement('option');
-    o.value = `only-${i}`;
-    o.textContent = `Only core list ${i}`;
-    sel.appendChild(o);
+    const lbl = document.createElement('label');
+    lbl.innerHTML = `<input type="checkbox" data-list="${i}"> ${i}`;
+    grid.appendChild(lbl);
+  }
+  // Range helpers: 1-50, 51-100, etc. Click to select that range only (within core).
+  const helpers = document.getElementById('listsRangeHelpers');
+  helpers.innerHTML = '';
+  const ranges = [[1,10],[11,30],[31,60],[61,100],[101,150],[151,214]];
+  for (const [a,b] of ranges) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = `+${a}–${b}`;
+    btn.title = `Add core lists ${a}–${b} to the selection`;
+    btn.onclick = () => {
+      for (let i = a; i <= b; i++) {
+        const cb = grid.querySelector(`input[data-list="${i}"]`);
+        if (cb) cb.checked = true;
+      }
+    };
+    helpers.appendChild(btn);
+  }
+}
+
+// Reflect state.selectedLists into the popover checkboxes.
+function syncListsPickerFromState() {
+  const sel = state.selectedLists; // null = all
+  const checked = sel ? new Set(sel) : null;
+  const all = document.querySelectorAll('#listsPopover input[type="checkbox"]');
+  all.forEach(cb => {
+    const id = parseInt(cb.dataset.list);
+    cb.checked = checked === null ? true : checked.has(id);
+  });
+}
+
+// Read the popover checkboxes into an array of list IDs (or null if all checked).
+function readListsPickerSelection() {
+  const all = document.querySelectorAll('#listsPopover input[type="checkbox"]');
+  const picked = [];
+  let total = 0;
+  all.forEach(cb => {
+    total++;
+    if (cb.checked) picked.push(parseInt(cb.dataset.list));
+  });
+  if (picked.length === total) return null;       // all selected → "All"
+  if (picked.length === 0) return null;            // nothing selected → fall back to all (avoids empty pool)
+  picked.sort((a, b) => a - b);
+  return picked;
+}
+
+// Update the "Lists: …" button label to summarize the current selection.
+function refreshListsButtonLabel() {
+  const btn = document.getElementById('listsBtn');
+  const sel = state.selectedLists;
+  if (!sel) { btn.textContent = 'Lists: All'; return; }
+  if (sel.length === 1) {
+    btn.textContent = sel[0] === 0 ? 'Lists: Lesson 1' : `Lists: only ${sel[0]}`;
+    return;
+  }
+  // Show first few list IDs + "..." if too many.
+  const labels = sel.map(i => i === 0 ? 'L1' : i);
+  if (labels.length <= 4) {
+    btn.textContent = `Lists: ${labels.join(', ')}`;
+  } else {
+    btn.textContent = `Lists: ${labels.slice(0, 3).join(', ')} +${labels.length - 3} more`;
   }
 }
 
@@ -496,14 +699,10 @@ function pickDistractors(targetIdx, n) {
 
 function getActiveSet() {
   const filter = document.getElementById('listFilter').value;
-  const range  = document.getElementById('listRange').value;
+  const sel = state.selectedLists; // null = all
+  const selSet = sel ? new Set(sel) : null;
   return DATA.filter(w => {
-    if (range && range.startsWith('only-')) {
-      if (w.list !== parseInt(range.slice(5))) return false;
-    } else if (range && range.includes('-')) {
-      const [a, b] = range.split('-').map(Number);
-      if (w.list < a || w.list > b) return false;
-    }
+    if (selSet && !selSet.has(w.list)) return false;
     if (filter === 'learning') {
       if (state.marks[w.word] !== 'learning') return false;
     } else if (filter === 'unmarked') {
@@ -515,30 +714,84 @@ function getActiveSet() {
   });
 }
 
-// Smart-weighted random selection: "still learning" gets 4× weight, unmarked 2×, "known" 1×
-function pickNext(prevIdx) {
+// Signature of the active set. When it changes, seenInPass is reset so a fresh
+// pass begins. We deliberately do NOT include marks in the signature — marks
+// changing during a pass shouldn't restart the pass.
+function activeSetSig() {
+  const filter = document.getElementById('listFilter').value;
+  const lists = state.selectedLists ? state.selectedLists.slice().sort((a,b)=>a-b).join(',') : 'all';
+  return `${filter}|${lists}`;
+}
+
+// If the active set has changed since the last pass started, clear the
+// seen-this-pass tracking so we begin a fresh pass through the new set.
+function syncPassToActiveSet() {
+  const sig = activeSetSig();
+  if (state.activeSetSig !== sig) {
+    state.activeSetSig = sig;
+    state.seenInPass = [];
+    state.passComplete = false;
+  }
+}
+
+// Pick the next word from the active set, never repeating a word within the
+// same pass. Ordering within the pass is mildly weighted: "still learning"
+// words tend to come earlier than "known" ones, but every word in the set
+// will appear exactly once before any repeats.
+//
+// Returns:
+//   >= 0  : index into DATA of the next word
+//    -1   : the active set is empty
+//    -2   : every word in the active set has been seen — pass complete
+function pickNext() {
+  syncPassToActiveSet();
   const pool = getActiveSet();
-  if (pool.length === 0) return -1;
-  if (pool.length === 1) return DATA.indexOf(pool[0]);
-  const weighted = pool.map(w => {
+  if (pool.length === 0) { state.passComplete = false; return -1; }
+
+  const seenSet = new Set(state.seenInPass);
+  const candidates = pool.filter(w => !seenSet.has(w.word));
+  if (candidates.length === 0) {
+    state.passComplete = true;
+    return -2;
+  }
+
+  // Mild weighting so "still learning" surfaces sooner — but every word still
+  // appears exactly once per pass.
+  const weighted = candidates.map(w => {
     const m = state.marks[w.word];
-    let weight = m === 'learning' ? 4 : (m === 'known' ? 1 : 2);
+    const weight = m === 'learning' ? 4 : (m === 'known' ? 1 : 2);
     return { w, weight };
   });
-  let total = weighted.reduce((s, x) => s + x.weight, 0);
-  // try a few times to avoid repeating the previous word
-  for (let attempt = 0; attempt < 6; attempt++) {
-    let r = Math.random() * total;
-    for (const { w, weight } of weighted) {
-      r -= weight;
-      if (r <= 0) {
-        const idx = DATA.indexOf(w);
-        if (idx !== prevIdx) return idx;
-        break;
-      }
-    }
+  const total = weighted.reduce((s, x) => s + x.weight, 0);
+  let r = Math.random() * total;
+  let chosen = weighted[weighted.length - 1].w;
+  for (const { w, weight } of weighted) {
+    r -= weight;
+    if (r <= 0) { chosen = w; break; }
   }
-  return DATA.indexOf(weighted[0].w);
+  state.seenInPass.push(chosen.word);
+  state.passComplete = false;
+  return DATA.indexOf(chosen);
+}
+
+// Reset the seen-this-pass tracking and start a fresh pass through the
+// current active set.
+function startNewPass() {
+  state.seenInPass = [];
+  state.passComplete = false;
+  state.activeSetSig = activeSetSig();
+}
+
+// Reset known/learning marks for every word in the current active set, and
+// start a fresh pass. Returns how many marks were cleared.
+function resetMarksForActiveSet() {
+  const pool = getActiveSet();
+  let cleared = 0;
+  for (const w of pool) {
+    if (state.marks[w.word]) { delete state.marks[w.word]; cleared++; }
+  }
+  startNewPass();
+  return cleared;
 }
 
 // ---------- rendering ----------
@@ -578,12 +831,57 @@ function reviewSentence(sent, word) {
   return escapeHTML(sent);
 }
 
+function renderFinishedScreen() {
+  // Replace the card body with a "you saw every word" message + actions.
+  const pool = getActiveSet();
+  const stillLearning = pool.filter(w => state.marks[w.word] === 'learning');
+  document.getElementById('listno').textContent = '—';
+  document.getElementById('pos').textContent = '';
+  document.getElementById('hintRow').innerHTML = '';
+  document.getElementById('revealBlock').classList.add('hidden');
+  document.getElementById('choices').classList.add('hidden');
+  document.getElementById('sentence').classList.remove('revealed', 'prompt');
+  const sentEl = document.getElementById('sentence');
+  sentEl.innerHTML = `
+    <div class="finished-screen">
+      <div class="icon">🌟</div>
+      <h2>Pass complete!</h2>
+      <div class="sub">You've seen all <b>${pool.length}</b> word${pool.length === 1 ? '' : 's'} in this set.<br>
+        ${stillLearning.length} still marked as <b>still learning</b>.</div>
+      <div class="finish-actions">
+        <button class="btn primary" id="finishAgain">Start another pass</button>
+        <button class="btn" id="finishLearning" ${stillLearning.length === 0 ? 'disabled' : ''}>Review only "still learning" (${stillLearning.length})</button>
+        <button class="btn warn" id="finishReset">Reset marks for this set</button>
+      </div>
+    </div>`;
+  document.getElementById('finishAgain').onclick = () => { startNewPass(); next(); };
+  document.getElementById('finishLearning').onclick = () => {
+    document.getElementById('listFilter').value = 'learning';
+    startNewPass();
+    next();
+  };
+  document.getElementById('finishReset').onclick = () => {
+    if (confirm('Clear known/learning marks for every word in the currently selected lists?')) {
+      const n = resetMarksForActiveSet();
+      saveState();
+      next();
+    }
+  };
+  updateStats();
+  saveState();
+}
+
 function render() {
+  if (state.passComplete) {
+    renderFinishedScreen();
+    return;
+  }
   const w = DATA[state.currentIndex];
   if (!w) {
     document.getElementById('sentence').innerHTML = "<em>No words match these filters.</em>";
     document.getElementById('hintRow').innerHTML = "";
     document.getElementById('revealBlock').classList.add('hidden');
+    document.getElementById('choices').classList.add('hidden');
     document.getElementById('listno').textContent = "—";
     document.getElementById('pos').textContent = "";
     return;
@@ -593,8 +891,17 @@ function render() {
   document.getElementById('pos').textContent = partOfSpeech(w.en);
 
   const mode = document.getElementById('mode').value;
+  const isWordPrompt = (mode === 'wordChoice' || mode === 'wordRecall');
   let sentenceHTML, hint = '';
-  if (mode === 'review') {
+
+  if (isWordPrompt) {
+    // Word → meaning: show the word + IPA as the big prompt.
+    const ipa = w.ipa ? `<span class="prompt-ipa">${escapeHTML(w.ipa)}</span>` : '';
+    const instr = mode === 'wordChoice'
+      ? '<span class="prompt-instr">Pick the meaning</span>'
+      : '<span class="prompt-instr">What does this word mean?</span>';
+    sentenceHTML = `<span class="prompt-word">${escapeHTML(w.word)}</span>${ipa}${instr}`;
+  } else if (mode === 'review') {
     if (w.sentence) {
       sentenceHTML = reviewSentence(w.sentence, w.word);
     } else {
@@ -604,7 +911,6 @@ function render() {
     sentenceHTML = defClozeSentence(w.en, w.word);
     if (!w.sentence) hint = '<span class="pos-hint">no example sentence yet — using definition</span>';
   } else if (mode === 'choice') {
-    // Use the regular cloze sentence if available; otherwise definition cloze.
     sentenceHTML = w.sentence ? clozeSentence(w.sentence, w.word)
                               : defClozeSentence(w.en, w.word);
     if (!w.sentence) hint = '<span class="pos-hint">using definition (no example sentence yet)</span>';
@@ -615,21 +921,24 @@ function render() {
   const sentEl = document.getElementById('sentence');
   sentEl.innerHTML = sentenceHTML;
   sentEl.classList.toggle('revealed', mode === 'review');
+  sentEl.classList.toggle('prompt', isWordPrompt);
 
-  // Choices (multiple-choice mode)
+  // Choices: word → choose word for 'choice', word → choose meaning for 'wordChoice'.
   const choicesEl = document.getElementById('choices');
   choicesEl.innerHTML = '';
-  if (mode === 'choice') {
+  if (mode === 'choice' || mode === 'wordChoice') {
     choicesEl.classList.remove('hidden');
     const distractors = pickDistractors(state.currentIndex, 3);
     const options = [state.currentIndex, ...distractors];
-    // shuffle
     options.sort(() => Math.random() - 0.5);
     for (const idx of options) {
       const wi = DATA[idx];
       const btn = document.createElement('button');
       btn.className = 'choice';
-      btn.textContent = wi.word;
+      // For word → meaning, show the Chinese definition (fall back to English).
+      btn.textContent = (mode === 'wordChoice')
+        ? (wi.zh && wi.zh.trim() ? wi.zh : wi.en)
+        : wi.word;
       btn.onclick = () => onChoiceClick(btn, idx, state.currentIndex);
       choicesEl.appendChild(btn);
     }
@@ -641,7 +950,9 @@ function render() {
   const firstLetter = w.word[0];
   const len = w.word.length;
   const hintBits = [];
-  if (mode !== 'review') {
+  // "Starts with X / N letters" only helps when she's recalling the WORD.
+  // Skip those in review and word-prompt modes (where the word is on screen).
+  if (mode !== 'review' && !isWordPrompt) {
     hintBits.push(`<span>Starts with <b>${firstLetter}</b></span>`);
     hintBits.push(`<span>${len} letters</span>`);
   }
@@ -672,9 +983,14 @@ function render() {
 function reveal() {
   document.getElementById('sentence').classList.add('revealed');
   document.getElementById('revealBlock').classList.remove('hidden');
-  // In multiple-choice mode, also highlight the correct choice if not yet picked
+  // In multiple-choice modes, highlight the correct choice if it isn't already.
+  const correctWord = DATA[state.currentIndex].word;
+  const mode = document.getElementById('mode').value;
+  const correctText = (mode === 'wordChoice')
+    ? ((DATA[state.currentIndex].zh && DATA[state.currentIndex].zh.trim()) ? DATA[state.currentIndex].zh : DATA[state.currentIndex].en)
+    : correctWord;
   document.querySelectorAll('#choices .choice').forEach(btn => {
-    if (btn.textContent === DATA[state.currentIndex].word && !btn.classList.contains('correct')) {
+    if (btn.textContent === correctText && !btn.classList.contains('correct')) {
       btn.classList.add('correct');
     }
     btn.disabled = true;
@@ -696,9 +1012,13 @@ function onChoiceClick(btn, chosenIdx, correctIdx) {
     }
   } else {
     btn.classList.add('wrong');
-    // Highlight the right one
+    // Highlight the right one (text shown depends on mode)
+    const mode = document.getElementById('mode').value;
+    const correctText = (mode === 'wordChoice')
+      ? ((DATA[correctIdx].zh && DATA[correctIdx].zh.trim()) ? DATA[correctIdx].zh : DATA[correctIdx].en)
+      : DATA[correctIdx].word;
     document.querySelectorAll('#choices .choice').forEach(b => {
-      if (b.textContent === DATA[correctIdx].word) {
+      if (b.textContent === correctText) {
         b.classList.add('correct');
         b.classList.remove('dim');
       }
@@ -714,22 +1034,26 @@ function onChoiceClick(btn, chosenIdx, correctIdx) {
   updateStats();
 }
 
+// Mark the current word and advance to the next one. (No more toggle-off
+// behavior — pressing either button always commits and moves on.)
 function mark(kind) {
+  if (state.passComplete) return;
   const w = DATA[state.currentIndex];
   if (!w) return;
-  if (state.marks[w.word] === kind) {
-    delete state.marks[w.word]; // toggle off
-  } else {
-    state.marks[w.word] = kind;
-  }
+  state.marks[w.word] = kind;
   saveState();
-  updateStats();
-  render();
+  next();
 }
 
 function next() {
   state.sessionViews = (state.sessionViews || 0) + 1;
-  state.currentIndex = pickNext(state.currentIndex);
+  const idx = pickNext();
+  if (idx === -2) {
+    // Pass complete — show the finished screen.
+    render();
+    return;
+  }
+  state.currentIndex = idx;
   render();
 }
 
@@ -787,9 +1111,14 @@ function init() {
     }
   }
 
-  listOptions();
-  document.getElementById('listFilter').addEventListener('change', () => { next(); });
-  document.getElementById('listRange').addEventListener('change',  () => { next(); });
+  buildListsPicker();
+  syncListsPickerFromState();
+  refreshListsButtonLabel();
+
+  document.getElementById('listFilter').addEventListener('change', () => {
+    startNewPass();
+    next();
+  });
   document.getElementById('mode').addEventListener('change',       () => { render(); });
   document.getElementById('revealBtn').addEventListener('click',   reveal);
   document.getElementById('knownBtn').addEventListener('click',    () => mark('known'));
@@ -798,11 +1127,52 @@ function init() {
   document.getElementById('speakBtn').addEventListener('click',    () => {
     const w = DATA[state.currentIndex]; if (w) speak(w.word);
   });
+
+  // Lists popover wiring
+  const listsBtn = document.getElementById('listsBtn');
+  const popover  = document.getElementById('listsPopover');
+  listsBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    popover.classList.toggle('hidden');
+  });
+  // Click-outside-to-close
+  document.addEventListener('click', e => {
+    if (popover.classList.contains('hidden')) return;
+    if (popover.contains(e.target) || listsBtn.contains(e.target)) return;
+    popover.classList.add('hidden');
+  });
+  document.getElementById('listsAll').onclick = () => {
+    document.querySelectorAll('#listsPopover input[type="checkbox"]').forEach(cb => cb.checked = true);
+  };
+  document.getElementById('listsNone').onclick = () => {
+    document.querySelectorAll('#listsPopover input[type="checkbox"]').forEach(cb => cb.checked = false);
+  };
+  document.getElementById('listsApply').onclick = () => {
+    state.selectedLists = readListsPickerSelection();
+    refreshListsButtonLabel();
+    syncListsPickerFromState();   // normalize (e.g. all-checked → null → all-checked)
+    popover.classList.add('hidden');
+    startNewPass();
+    saveState();
+    next();
+  };
+
+  // Reset-this-set: clear marks only for words in the active set.
+  document.getElementById('resetSet').addEventListener('click', () => {
+    const pool = getActiveSet();
+    if (!confirm(`Clear known/learning marks for ${pool.length} word${pool.length === 1 ? '' : 's'} in the currently selected lists?`)) return;
+    const n = resetMarksForActiveSet();
+    saveState();
+    next();
+  });
+
+  // Reset-all (was "Reset progress"): clear every mark, everywhere.
   document.getElementById('resetMarks').addEventListener('click',  () => {
-    if (confirm('Clear all your "known/learning" marks? This cannot be undone.')) {
+    if (confirm('Clear ALL your "known/learning" marks across every list? This cannot be undone.')) {
       state.marks = {};
+      startNewPass();
       saveState();
-      render();
+      next();
     }
   });
 
@@ -814,11 +1184,17 @@ function init() {
     else if (e.key === 'l') mark('learning');
   });
 
-  // First word
-  if (state.currentIndex < 0 || state.currentIndex >= DATA.length) {
-    state.currentIndex = pickNext(-1);
+  // First word. We always re-pick on load so that:
+  //   - the active-set signature is up to date
+  //   - a stale "passComplete" from last session is cleared if the set has changed
+  //   - currentIndex points at a word that's actually in the active set
+  syncPassToActiveSet();
+  if (state.passComplete) {
+    render();
+  } else {
+    state.currentIndex = pickNext();
+    if (state.currentIndex === -2) { render(); } else { render(); }
   }
-  render();
 }
 
 // Run init regardless of whether DOMContentLoaded already fired (this matters
