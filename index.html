@@ -950,9 +950,13 @@ function render() {
   const firstLetter = w.word[0];
   const len = w.word.length;
   const hintBits = [];
-  // "Starts with X / N letters" only helps when she's recalling the WORD.
-  // Skip those in review and word-prompt modes (where the word is on screen).
-  if (mode !== 'review' && !isWordPrompt) {
+  // "Starts with X / N letters" only helps when she's recalling the WORD
+  // with no options visible. Skip in:
+  //   - review mode (word is already shown)
+  //   - word-prompt modes (word is the prompt)
+  //   - multiple-choice mode (the hint leaks the answer — she can just
+  //     pick whichever choice starts with that letter / has that length).
+  if (mode === 'cloze' || mode === 'defcloze') {
     hintBits.push(`<span>Starts with <b>${firstLetter}</b></span>`);
     hintBits.push(`<span>${len} letters</span>`);
   }
