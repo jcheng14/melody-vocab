@@ -362,6 +362,116 @@
   }
   .lists-range-helpers button:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
+  /* ---- Buddy emoji + progress bar avatar ---- */
+  .buddy-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--soft);
+    margin: 4px 0 6px;
+    flex-wrap: wrap;
+  }
+  .buddy-row label { color: var(--soft); font-size: 13px; }
+  .buddy-row select {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .progress-wrap { position: relative; margin: 6px 0 6px; }
+  .progress-wrap .progress { margin: 0; }
+  .progress-emoji {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    line-height: 1;
+    transition: left 600ms ease;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18));
+  }
+  .buddy-message {
+    font-size: 14px;
+    color: var(--ink);
+    margin: 4px 0 14px;
+    min-height: 20px;
+  }
+  .buddy-message .em { color: var(--accent); font-weight: 600; }
+
+  /* ---- Celebration overlay ---- */
+  .celebration {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 250ms ease;
+  }
+  .celebration.hidden { display: none; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .celebration .card-inner {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 32px 36px 28px;
+    max-width: 380px;
+    width: calc(100% - 32px);
+    text-align: center;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.25);
+    position: relative;
+    z-index: 2;
+    animation: pop 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .celebration h1 {
+    margin: 0 0 6px;
+    font-size: 30px;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .celebration .sub { color: var(--soft); margin: 4px 0 18px; font-size: 14px; }
+  .celebration .buddy-big { font-size: 64px; line-height: 1; margin-bottom: 8px; }
+  .celebration button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .celebration button:hover { background: #248471; }
+  .confetti-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -40px;
+    font-size: 22px;
+    animation: confetti-fall linear forwards;
+    will-change: transform;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.85; }
+  }
+
   /* ---- Finished screen ---- */
   .finished-screen { text-align: center; padding: 30px 10px 10px; }
   .finished-screen .icon { font-size: 48px; margin-bottom: 8px; }
@@ -453,7 +563,26 @@
     <button id="resetMarks" title="Clear ALL your progress marks">Reset all</button>
   </div>
 
-  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="buddy-row">
+    <label for="buddyEmoji">Your buddy:</label>
+    <select id="buddyEmoji" title="Pick the emoji that rides your progress bar"></select>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="progress-emoji" id="progressEmoji">🦊</div>
+  </div>
+  <div class="buddy-message" id="buddyMessage"></div>
+
+  <!-- Celebration overlay shown when she completes a full pass -->
+  <div class="celebration hidden" id="celebration">
+    <div class="confetti-layer" id="confettiLayer"></div>
+    <div class="card-inner">
+      <div class="buddy-big" id="celebrationEmoji">🦊</div>
+      <h1>🎉 Yay, you did it! 🎉</h1>
+      <div class="sub" id="celebrationSub"></div>
+      <button id="celebrationContinue">Continue →</button>
+    </div>
+  </div>
 
   <div class="card" id="card">
     <div class="meta">
@@ -519,7 +648,8 @@ function defaultState() {
     selectedLists: null,   // null = all lists; otherwise an array of list IDs (0 = Lesson 1)
     seenInPass: [],        // words already shown in the current pass through the active set
     activeSetSig: '',      // signature of the active set; used to detect filter/list changes
-    passComplete: false    // when true, render the finished screen
+    passComplete: false,   // when true, render the finished screen
+    buddyEmoji: '🦊'       // emoji that rides the progress bar
   };
 }
 function loadState() {
@@ -1051,10 +1181,13 @@ function mark(kind) {
 
 function next() {
   state.sessionViews = (state.sessionViews || 0) + 1;
+  const wasComplete = state.passComplete;
   const idx = pickNext();
   if (idx === -2) {
-    // Pass complete — show the finished screen.
+    // Pass complete — show the finished screen, and (only on the
+    // transition from "in progress" to "done") fire the celebration.
     render();
+    if (!wasComplete) showCelebration();
     return;
   }
   state.currentIndex = idx;
@@ -1081,6 +1214,47 @@ function scopeLabel() {
   return `${sel.length} selected lists`;
 }
 
+// ---------- Buddy emoji ----------
+const BUDDY_EMOJIS = ['🦊','🦉','🐱','🐶','🐉','🦄','🐼','🐧','🐢','🦁','🐰','🐸','🦋','🐝','🐳'];
+
+function buildBuddyPicker() {
+  const sel = document.getElementById('buddyEmoji');
+  sel.innerHTML = '';
+  for (const e of BUDDY_EMOJIS) {
+    const o = document.createElement('option');
+    o.value = e;
+    o.textContent = e;
+    sel.appendChild(o);
+  }
+  // Honor stored choice (or default).
+  if (!BUDDY_EMOJIS.includes(state.buddyEmoji)) state.buddyEmoji = BUDDY_EMOJIS[0];
+  sel.value = state.buddyEmoji;
+  applyBuddyEmoji();
+  sel.addEventListener('change', () => {
+    state.buddyEmoji = sel.value;
+    applyBuddyEmoji();
+    saveState();
+  });
+}
+
+function applyBuddyEmoji() {
+  const e = state.buddyEmoji || '🦊';
+  document.getElementById('progressEmoji').textContent = e;
+  document.getElementById('celebrationEmoji').textContent = e;
+}
+
+// Returns a friendly one-liner about progress in the current scope.
+function buddyMessageFor(known, learning, total, pct, label) {
+  const e = state.buddyEmoji || '🦊';
+  const remaining = Math.max(0, total - known);
+  if (total === 0) return `${e} Pick some lists to start practicing!`;
+  if (pct === 100) return `${e} You learned every word in <span class="em">${escapeHTML(label)}</span>! 🎉`;
+  if (pct === 0)   return `${e} Let's start <span class="em">${escapeHTML(label)}</span> — ${total} words to learn!`;
+  if (pct < 25)    return `${e} You've learned <span class="em">${known}</span> of ${total} words. Keep going!`;
+  if (pct < 75)    return `${e} <span class="em">${known}</span> down, <span class="em">${remaining}</span> to go in ${escapeHTML(label)}!`;
+  return `${e} Just <span class="em">${remaining}</span> more in ${escapeHTML(label)} — almost there!`;
+}
+
 function updateStats() {
   const scope = getScopeSet();
   const total = scope.length;
@@ -1096,8 +1270,47 @@ function updateStats() {
   document.getElementById('stats').innerHTML =
     `<b>${escapeHTML(label)}:</b> ${known} known · <span style="color:#8c4530">${learning} learning</span> · ${total} total · <b>${pct}%</b>`;
   document.getElementById('bar').style.width = pct + '%';
+  // Slide the buddy emoji to match progress.
+  const emoji = document.getElementById('progressEmoji');
+  if (emoji) emoji.style.left = pct + '%';
+  // Friendly one-liner under the bar.
+  const msg = document.getElementById('buddyMessage');
+  if (msg) msg.innerHTML = buddyMessageFor(known, learning, total, pct, label);
   document.getElementById('footerStats').textContent =
     `${pct}% known in ${label.toLowerCase()} · session views: ${state.sessionViews || 0} · keyboard: → next, Space reveal`;
+}
+
+// ---------- Celebration ----------
+function showCelebration() {
+  const overlay = document.getElementById('celebration');
+  if (!overlay) return;
+  // Subtitle: name what she just finished.
+  const scope = getScopeSet();
+  const label = scopeLabel();
+  const sub = document.getElementById('celebrationSub');
+  if (sub) sub.textContent = `You completed all ${scope.length} word${scope.length === 1 ? '' : 's'} in ${label}!`;
+  // Sprinkle confetti.
+  const layer = document.getElementById('confettiLayer');
+  if (layer) {
+    layer.innerHTML = '';
+    const pieces = ['🎉','✨','⭐','🎊','💫','🌟'];
+    for (let i = 0; i < 36; i++) {
+      const span = document.createElement('span');
+      span.className = 'confetti-piece';
+      span.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+      span.style.left = (Math.random() * 100) + '%';
+      span.style.animationDuration = (2.4 + Math.random() * 1.8) + 's';
+      span.style.animationDelay = (Math.random() * 0.6) + 's';
+      span.style.fontSize = (16 + Math.random() * 16) + 'px';
+      layer.appendChild(span);
+    }
+  }
+  overlay.classList.remove('hidden');
+}
+
+function hideCelebration() {
+  const overlay = document.getElementById('celebration');
+  if (overlay) overlay.classList.add('hidden');
 }
 
 // ---------- TTS ----------
@@ -1142,6 +1355,16 @@ function init() {
   buildListsPicker();
   syncListsPickerFromState();
   refreshListsButtonLabel();
+  buildBuddyPicker();
+
+  // Celebration overlay: dismiss with the Continue button or by clicking the backdrop.
+  const overlay = document.getElementById('celebration');
+  if (overlay) {
+    document.getElementById('celebrationContinue').addEventListener('click', hideCelebration);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) hideCelebration();
+    });
+  }
 
   document.getElementById('listFilter').addEventListener('change', () => {
     startNewPass();
