@@ -238,6 +238,14 @@
   .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
   .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
   .btn.primary:hover { background: #248471; }
+  .btn.pulse {
+    animation: next-pulse 1.6s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(45,163,138,0.55);
+  }
+  @keyframes next-pulse {
+    0%, 100% { box-shadow: 0 0 0 0     rgba(45,163,138,0.55); }
+    50%      { box-shadow: 0 0 0 10px  rgba(45,163,138,0); }
+  }
   .btn.warn  { color: var(--warn); border-color: #f0c9bb; }
   .btn.good  { color: #3f6f3f; border-color: #cfe3cf; }
   .btn.ghost { background: transparent; }
@@ -617,55 +625,21 @@
     border-bottom-color: transparent;
   }
 
-  /* Candle melting timer */
-  .candle-wrap { position: absolute; top: 14px; right: 14px; pointer-events: none; }
-  .candle {
-    position: relative;
-    width: 18px;
-    height: 60px;
-    background: #f8e4b6;
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: inset -2px 0 4px rgba(120,80,20,0.2), 0 2px 4px rgba(0,0,0,0.08);
-  }
-  .candle .wax {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 0%, #f1d489 8%, #e9c163 100%);
-    transform-origin: bottom;
-    transform: scaleY(1);
-    transition: transform linear;
-  }
-  .candle .flame {
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 18px;
-    animation: flame-flicker 1.4s ease-in-out infinite;
-    line-height: 1;
-  }
-  @keyframes flame-flicker {
-    0%, 100% { transform: translateX(-50%) scale(1)    rotate(-2deg); }
-    50%      { transform: translateX(-50%) scale(1.08) rotate(2deg); }
-  }
-  .candle-wrap.out .flame { opacity: 0; }
-  .candle-wrap.out .wax { transform: scaleY(0); }
-
   /* Spell cards: 4 floating choices */
   .spell-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 18px;
   }
   .spell-cards.hidden { display: none; }
+
   .spell-card {
     position: relative;
     background: var(--card);
     border: 1.5px solid var(--line);
     border-radius: 16px;
-    padding: 16px 18px;
+    padding: 18px 18px 16px;
     font-size: 17px;
     font-weight: 600;
     cursor: pointer;
@@ -674,23 +648,85 @@
     font-family: inherit;
     color: var(--ink);
     box-shadow: 0 3px 10px rgba(40,40,40,0.06);
-    animation: card-float 4s ease-in-out infinite;
     overflow: hidden;
+    will-change: transform;
   }
-  .spell-card:nth-child(1) { animation-delay: 0.0s; }
-  .spell-card:nth-child(2) { animation-delay: 0.7s; }
-  .spell-card:nth-child(3) { animation-delay: 1.4s; }
-  .spell-card:nth-child(4) { animation-delay: 2.1s; }
-  @keyframes card-float {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-4px); }
+
+  /* Each of the 4 cards gets its own idle drift — different paths, different
+     speeds, different rotations. The motion is gentle (max ~6px) so reading
+     the word isn't difficult, but together the four cards feel alive. */
+  @keyframes float-a {
+    0%, 100% { transform: translateY(0)    rotate(-0.6deg); }
+    50%      { transform: translateY(-6px) rotate(0.4deg); }
   }
+  @keyframes float-b {
+    0%, 100% { transform: translateY(-3px) rotate(0.5deg); }
+    50%      { transform: translateY(4px)  rotate(-0.6deg); }
+  }
+  @keyframes float-c {
+    0%, 100% { transform: translateY(2px)  rotate(0.3deg); }
+    50%      { transform: translateY(-5px) rotate(-0.4deg); }
+  }
+  @keyframes float-d {
+    0%, 100% { transform: translateY(-2px) rotate(-0.3deg); }
+    50%      { transform: translateY(5px)  rotate(0.5deg); }
+  }
+  .spell-card:nth-child(1) { animation: float-a 3.6s ease-in-out infinite; }
+  .spell-card:nth-child(2) { animation: float-b 4.4s ease-in-out infinite 0.3s; }
+  .spell-card:nth-child(3) { animation: float-c 4.0s ease-in-out infinite 0.6s; }
+  .spell-card:nth-child(4) { animation: float-d 4.8s ease-in-out infinite 0.9s; }
+
+  /* A sweeping shimmer reflection that crosses each card on a slow staggered
+     loop. Gives the cards a "magical" feel without being distracting. */
+  .spell-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(105deg,
+      transparent 0%,
+      rgba(255,255,255,0.0) 30%,
+      rgba(255,255,255,0.55) 50%,
+      rgba(255,255,255,0.0) 70%,
+      transparent 100%);
+    transform: translateX(-180%);
+    pointer-events: none;
+    animation: shimmer-sweep 5.5s ease-in-out infinite;
+  }
+  @keyframes shimmer-sweep {
+    0%, 70%, 100% { transform: translateX(-180%); opacity: 0.0; }
+    78%           { transform: translateX(-100%); opacity: 1.0; }
+    92%           { transform: translateX(220%);  opacity: 1.0; }
+    95%           { transform: translateX(280%);  opacity: 0.0; }
+  }
+  .spell-card:nth-child(1)::before { animation-delay: 0.0s; }
+  .spell-card:nth-child(2)::before { animation-delay: 1.4s; }
+  .spell-card:nth-child(3)::before { animation-delay: 2.8s; }
+  .spell-card:nth-child(4)::before { animation-delay: 4.2s; }
+
   .spell-card:hover {
     border-color: var(--house, var(--accent));
     background: var(--house-soft, var(--accent-soft));
-    box-shadow: 0 6px 16px rgba(40,40,40,0.10);
+    box-shadow: 0 12px 24px rgba(40,40,40,0.14);
+    animation-play-state: paused;
+    z-index: 2;
   }
-  .spell-card .icon { display: block; font-size: 22px; margin-bottom: 4px; opacity: 0.85; }
+  .spell-card .icon {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 6px;
+    opacity: 0.92;
+    line-height: 1;
+    animation: icon-twinkle 2.4s ease-in-out infinite;
+  }
+  @keyframes icon-twinkle {
+    0%, 100% { transform: scale(1)    rotate(0deg); opacity: 0.85; }
+    50%      { transform: scale(1.15) rotate(8deg); opacity: 1; }
+  }
+  .spell-card:nth-child(2) .icon { animation-delay: 0.6s; }
+  .spell-card:nth-child(3) .icon { animation-delay: 1.2s; }
+  .spell-card:nth-child(4) .icon { animation-delay: 1.8s; }
   .spell-card.correct {
     border-color: #d4a83a;
     background: linear-gradient(135deg, #fff9d6, #ffe9a1);
@@ -976,9 +1012,6 @@
 
     <div class="parchment">
       <div class="sentence" id="sentence"></div>
-      <div class="candle-wrap" id="candleWrap">
-        <div class="candle"><div class="wax" id="candleWax"></div><div class="flame" id="candleFlame">🔥</div></div>
-      </div>
     </div>
 
     <div class="spell-cards" id="choices"></div>
@@ -1433,44 +1466,23 @@ function renderFinishedScreen() {
 
 // Tracks whether the current question has been "answered" (right or wrong),
 // so a second click on a different card doesn't re-trigger scoring.
+// There's no timer — she can sit on the question (or the answer) as long as
+// she wants. Advance happens only when she taps Next.
 let answered = false;
-let candleTimer = null;
-const CANDLE_SECONDS = 12;
 
-function clearCandle() {
-  const wrap = document.getElementById('candleWrap');
-  const wax = document.getElementById('candleWax');
-  if (wrap) wrap.classList.remove('out');
-  if (wax)  { wax.style.transition = 'none'; wax.style.transform = 'scaleY(1)'; }
-  if (candleTimer) { clearTimeout(candleTimer); candleTimer = null; }
+// After she answers, draw attention to the Next button so she knows she
+// controls when to advance. Removed on the next render().
+function highlightNextButton() {
+  const btn = document.getElementById('nextBtn');
+  if (!btn) return;
+  btn.classList.add('primary', 'pulse');
+  btn.textContent = 'Next →';
 }
-
-function startCandle() {
-  const wax = document.getElementById('candleWax');
-  if (!wax) return;
-  // Force a reflow so the transition starts cleanly from full height.
-  wax.style.transition = 'none';
-  wax.style.transform  = 'scaleY(1)';
-  void wax.offsetHeight;
-  wax.style.transition = `transform ${CANDLE_SECONDS}s linear`;
-  wax.style.transform  = 'scaleY(0)';
-  candleTimer = setTimeout(() => {
-    document.getElementById('candleWrap').classList.add('out');
-    onTimeOut();
-  }, CANDLE_SECONDS * 1000);
-}
-
-function onTimeOut() {
-  if (answered) return;
-  answered = true;
-  // No selection in time — reveal the correct card, mark as still learning, reset streak.
-  state.marks[DATA[state.currentIndex].word] = 'learning';
-  state.streak = 0;
-  saveState();
-  highlightCorrectCard();
-  updateScoreChips();
-  // Auto-advance after a brief pause so she can see the answer.
-  setTimeout(() => next(), 1600);
+function unhighlightNextButton() {
+  const btn = document.getElementById('nextBtn');
+  if (!btn) return;
+  btn.classList.remove('primary', 'pulse');
+  btn.textContent = 'Skip →';
 }
 
 function highlightCorrectCard() {
@@ -1491,8 +1503,8 @@ function render() {
     renderFinishedScreen();
     return;
   }
-  clearCandle();
   answered = false;
+  unhighlightNextButton();
 
   const w = DATA[state.currentIndex];
   if (!w) {
@@ -1513,22 +1525,26 @@ function render() {
   sentEl.classList.remove('revealed');
   sentEl.innerHTML = w.sentence ? clozeSentence(w.sentence, w.word) : defClozeSentence(w.en, w.word);
 
-  // Spell cards (4 word choices, target + 3 distractors).
+  // Spell cards (4 word choices, target + 3 distractors). Each card gets a
+  // different magical icon so the 4 feel distinct, not interchangeable.
   const choicesEl = document.getElementById('choices');
   choicesEl.classList.remove('hidden');
   choicesEl.innerHTML = '';
   const distractors = pickDistractors(state.currentIndex, 3);
   const options = [state.currentIndex, ...distractors];
   options.sort(() => Math.random() - 0.5);
-  for (const idx of options) {
+  // Pick 4 distinct icons from the magical pool, shuffled fresh each question.
+  const ICON_POOL = ['✨','⭐','🪄','🌟','🔮','💫','🪶','🌙'];
+  const icons = ICON_POOL.slice().sort(() => Math.random() - 0.5).slice(0, 4);
+  options.forEach((idx, i) => {
     const wi = DATA[idx];
     const btn = document.createElement('button');
     btn.className = 'spell-card';
     btn.dataset.word = wi.word;
-    btn.innerHTML = `<span class="icon">✨</span>${escapeHTML(wi.word)}`;
+    btn.innerHTML = `<span class="icon">${icons[i]}</span>${escapeHTML(wi.word)}`;
     btn.onclick = () => onChoiceClick(btn, idx, state.currentIndex);
     choicesEl.appendChild(btn);
-  }
+  });
 
   // Hint row (mark indicator only; the "starts with / N letters" hints don't
   // apply in this mode since the word is on screen).
@@ -1547,7 +1563,6 @@ function render() {
 
   updateStats();
   saveState();
-  startCandle();
 }
 
 function reveal() {
@@ -1557,10 +1572,10 @@ function reveal() {
   state.marks[DATA[state.currentIndex].word] = 'learning';
   state.streak = 0;
   saveState();
-  clearCandle();
   document.getElementById('sentence').classList.add('revealed');
   document.getElementById('revealBlock').classList.remove('hidden');
   highlightCorrectCard();
+  highlightNextButton();
   updateScoreChips();
 }
 
@@ -1594,7 +1609,6 @@ function galleonPop(card, delta) {
 function onChoiceClick(btn, chosenIdx, correctIdx) {
   if (answered) return;
   answered = true;
-  clearCandle();
   // Lock all cards.
   document.querySelectorAll('#choices .spell-card').forEach(b => {
     b.disabled = true;
@@ -1618,12 +1632,10 @@ function onChoiceClick(btn, chosenIdx, correctIdx) {
     document.getElementById('revealBlock').classList.remove('hidden');
     saveState();
     updateScoreChips();
-    // Auto-advance after the celebration animation finishes.
-    setTimeout(() => next(), 1100);
   } else {
     btn.classList.add('wrong');
     state.streak = 0;
-    // Highlight the right card after a beat.
+    // Highlight the right card so she can see what the correct answer was.
     const correctWord = DATA[correctIdx].word;
     document.querySelectorAll('#choices .spell-card').forEach(b => {
       if (b.dataset.word === correctWord) {
@@ -1636,13 +1648,15 @@ function onChoiceClick(btn, chosenIdx, correctIdx) {
     document.getElementById('revealBlock').classList.remove('hidden');
     saveState();
     updateScoreChips();
-    // Auto-advance after a beat so she can see the right answer.
-    setTimeout(() => next(), 1700);
   }
+  // Draw attention to Next so she knows she controls when to advance.
+  highlightNextButton();
   updateStats();
 }
 
-// "Skip" button: mark as still learning + advance, like a soft give-up.
+// "Next/Skip" button: when she hasn't answered yet, this is a soft give-up
+// that marks the word as still learning. When she HAS answered, it just
+// advances without changing anything.
 function skipForward() {
   if (state.passComplete) return;
   if (!answered) {
@@ -1651,7 +1665,6 @@ function skipForward() {
     state.streak = 0;
     saveState();
   }
-  clearCandle();
   next();
 }
 
