@@ -1372,11 +1372,15 @@
     border-top: 1px dashed var(--line);
     padding-top: 10px;
     margin-top: 12px;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--soft);
   }
   .fish-quiz-reveal.hidden { display: none; }
-  .fish-quiz-reveal .fqr-word { color: var(--house, var(--accent)); font-weight: 700; font-size: 18px; }
+  .fq-reveal-item { margin-bottom: 4px; line-height: 1.35; }
+  .fq-reveal-item .fqr-word { font-weight: 700; }
+  .fq-reveal-item.is-correct .fqr-word { color: #3f6f3f; }
+  .fq-reveal-item.is-wrong .fqr-word { color: #8c4530; }
+  .fq-reveal-item.is-other .fqr-word { color: var(--soft); }
   .fish-quiz-next {
     margin-top: 14px;
     text-align: right;
@@ -1409,14 +1413,6 @@
   .fish-result-card .result-sub { color: var(--soft); font-size: 14px; margin-bottom: 16px; }
   .fish-result-card .result-score { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #8a6b18; }
 
-  .fr-review { max-height: 220px; overflow-y: auto; margin-bottom: 16px; text-align: left; }
-  .fr-review-item { padding: 8px 10px; border-radius: 10px; margin-bottom: 6px; font-size: 13px; line-height: 1.4; }
-  .fr-review-item.is-correct { background: #e8f5e9; }
-  .fr-review-item.is-wrong { background: #ffeaea; }
-  .fr-review-word { font-weight: 700; font-size: 14px; }
-  .fr-review-def { color: var(--soft); margin-top: 2px; }
-  .fr-review-picked { color: #c62828; margin-top: 4px; font-size: 12px; }
-  .fr-review-picked b { color: #c62828; }
 
   /* ---- Inventory / Bucket ---- */
   .fish-inventory {
@@ -1756,10 +1752,7 @@
           <div class="fq-sentence" id="fqSentence"></div>
           <div class="fish-quiz-choices" id="fqChoices"></div>
         </div>
-        <div class="fish-quiz-reveal hidden" id="fqReveal">
-          <span class="fqr-word" id="fqrWord"></span>
-          <span id="fqrIpa"></span> — <span id="fqrZh"></span>
-        </div>
+        <div class="fish-quiz-reveal hidden" id="fqReveal"></div>
         <div class="fish-quiz-next">
           <button class="btn primary" id="fqNextBtn">Next →</button>
         </div>
@@ -1773,7 +1766,6 @@
         <h2 id="frTitle">Nice Catch!</h2>
         <div class="result-sub" id="frSub">You got 4 out of 5 right!</div>
         <div class="result-score" id="frScore"></div>
-        <div class="fr-review" id="frReview"></div>
         <button class="btn primary" id="frContinueBtn">Keep Fishing →</button>
       </div>
     </div>
@@ -3135,10 +3127,8 @@ function onFishQuizChoice(btn, chosenIdx, correctIdx) {
   if (fishQuizAnswered) return;
   fishQuizAnswered = true;
   const correct = chosenIdx === correctIdx;
-  document.querySelectorAll('#fqChoices .fq-choice').forEach(b => {
-    b.disabled = true;
-    if (b !== btn) b.classList.add('dim');
-  });
+  const allBtns = document.querySelectorAll('#fqChoices .fq-choice');
+  allBtns.forEach(b => { b.disabled = true; });
   if (correct) {
     btn.classList.add('correct');
     fishQuizScore++;
@@ -3148,17 +3138,28 @@ function onFishQuizChoice(btn, chosenIdx, correctIdx) {
     btn.classList.add('wrong');
     fishQuizResults.push({ correct: false, word: DATA[correctIdx], chosen: DATA[chosenIdx] });
     const correctWord = DATA[correctIdx].word;
-    document.querySelectorAll('#fqChoices .fq-choice').forEach(b => {
-      if (b.textContent === correctWord) { b.classList.add('correct'); b.classList.remove('dim'); }
+    allBtns.forEach(b => {
+      if (b.textContent === correctWord) b.classList.add('correct');
     });
-    state.marks[correctWord] = 'learning';
+    state.marks[DATA[correctIdx].word] = 'learning';
   }
   saveState();
-  const w = DATA[correctIdx];
-  document.getElementById('fqrWord').textContent = w.word;
-  document.getElementById('fqrIpa').textContent = w.ipa || '';
-  document.getElementById('fqrZh').textContent = w.zh || '';
-  document.getElementById('fqReveal').classList.remove('hidden');
+  const revealEl = document.getElementById('fqReveal');
+  revealEl.innerHTML = '';
+  allBtns.forEach(b => {
+    const word = b.textContent;
+    const wObj = DATA.find(d => d.word === word);
+    if (!wObj) return;
+    const isCorrect = wObj.word === DATA[correctIdx].word;
+    const isChosen = b === btn;
+    const cls = isCorrect ? 'is-correct' : (isChosen && !correct) ? 'is-wrong' : 'is-other';
+    const div = document.createElement('div');
+    div.className = 'fq-reveal-item ' + cls;
+    const tag = isCorrect ? '✅' : (isChosen && !correct) ? '❌' : '·';
+    div.innerHTML = `${tag} <span class="fqr-word">${escapeHTML(wObj.word)}</span> — ${escapeHTML(wObj.en)}${wObj.zh ? ' (' + escapeHTML(wObj.zh) + ')' : ''}`;
+    revealEl.appendChild(div);
+  });
+  revealEl.classList.remove('hidden');
   document.getElementById('fqSentence').classList.add('revealed');
   renderFishQuizProgress();
   if (fishQuizIndex >= fishQuizWords.length - 1) {
@@ -3220,20 +3221,6 @@ function showFishResult() {
   saveFishState();
   updateFishUI();
   buildCharPicker();
-  const reviewEl = document.getElementById('frReview');
-  reviewEl.innerHTML = '';
-  fishQuizResults.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'fr-review-item ' + (r.correct ? 'is-correct' : 'is-wrong');
-    const w = r.word;
-    let html = `<div class="fr-review-word">${r.correct ? '✅' : '❌'} ${escapeHTML(w.word)}</div>`;
-    html += `<div class="fr-review-def">${escapeHTML(w.en)}${w.zh ? ' — ' + escapeHTML(w.zh) : ''}</div>`;
-    if (!r.correct && r.chosen) {
-      html += `<div class="fr-review-picked">You picked: <b>${escapeHTML(r.chosen.word)}</b> — ${escapeHTML(r.chosen.en)}${r.chosen.zh ? ' (' + escapeHTML(r.chosen.zh) + ')' : ''}</div>`;
-    }
-    div.innerHTML = html;
-    reviewEl.appendChild(div);
-  });
   document.getElementById('fishResultOverlay').classList.remove('hidden');
 }
 
