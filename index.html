@@ -935,6 +935,629 @@
   body.house-slytherin  { --house: #1a472a; --house-soft: #dfead4; }
   body.house-hufflepuff { --house: #8a6b18; --house-soft: #fbe7a4; }
   body.house-ravenclaw  { --house: #0e1a40; --house-soft: #d8def0; }
+
+  /* ======== MODE SWITCHER ======== */
+  .mode-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--line);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .mode-switcher button {
+    border: none;
+    background: transparent;
+    color: var(--soft);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 150ms ease;
+  }
+  .mode-switcher button.active {
+    background: var(--card);
+    color: var(--house, var(--accent));
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .mode-switcher button:not(.active):hover { color: var(--ink); }
+
+  /* ======== FISHING GAME ======== */
+  .fishing-game { display: none; }
+  .fishing-game.active { display: block; }
+  .vocab-game { display: none; }
+  .vocab-game.active { display: block; }
+
+  /* Lesson picker for fishing */
+  .fish-lesson-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .fish-lesson-picker label { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .fish-lesson-picker select {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Character picker */
+  .char-picker {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    padding: 4px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .char-pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid var(--line);
+    background: var(--card);
+    border-radius: 12px;
+    padding: 6px 10px 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 140ms ease;
+    min-width: 56px;
+    flex-shrink: 0;
+  }
+  .char-pick:hover { border-color: var(--house, var(--accent)); background: var(--house-soft, var(--accent-soft)); transform: translateY(-2px); }
+  .char-pick.active {
+    border-color: var(--house, var(--accent));
+    background: var(--house-soft, var(--accent-soft));
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .char-pick.locked { opacity: 0.5; }
+  .char-pick.locked:hover { opacity: 0.7; }
+  .char-pick .cp-emoji { font-size: 28px; line-height: 1; }
+  .char-pick .cp-name { font-size: 10px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+  .char-pick .cp-cost { font-size: 9px; color: #8a6b18; }
+
+  /* Outfit accessory on character */
+  .fisher-accessory {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    font-size: 18px;
+    animation: accessory-bounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    pointer-events: none;
+  }
+  @keyframes accessory-bounce {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-3px) rotate(5deg); }
+  }
+
+  /* Pond scene */
+  .pond-scene {
+    position: relative;
+    background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 40%, #2e8b57 40%, #2e8b57 45%, #1a6b9a 45%, #0e4d7a 100%);
+    border-radius: var(--radius);
+    min-height: 380px;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .pond-scene.no-click { cursor: default; }
+
+  /* Sky elements */
+  .pond-clouds {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 200%;
+    font-size: 28px;
+    opacity: 0.7;
+    animation: clouds-drift 40s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes clouds-drift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Sun */
+  .pond-sun {
+    position: absolute;
+    top: 12px;
+    right: 24px;
+    font-size: 36px;
+    animation: sun-glow 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes sun-glow {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.1); filter: brightness(1.15); }
+  }
+
+  /* Grass/bank strip */
+  .pond-bank {
+    position: absolute;
+    top: 38%;
+    left: 0;
+    right: 0;
+    height: 30px;
+    pointer-events: none;
+  }
+  .pond-bank::before {
+    content: '🌿🌱🌾🌿🌱🌾🌿🌱🌾🌿🌱🌾🌿🌱🌾🌿🌱🌾';
+    position: absolute;
+    top: -8px;
+    left: -10px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  /* Water surface */
+  .pond-water {
+    position: absolute;
+    top: 45%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #1a8abf 0%, #0e5a8a 40%, #0a3d6b 100%);
+    overflow: hidden;
+  }
+
+  /* Ripples */
+  .pond-ripple {
+    position: absolute;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    animation: ripple-expand 2s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes ripple-expand {
+    0% { width: 0; height: 0; opacity: 0.8; transform: translate(-50%, -50%); }
+    100% { width: 120px; height: 40px; opacity: 0; transform: translate(-50%, -50%); }
+  }
+
+  /* Fisher character */
+  .fisher-character {
+    position: absolute;
+    top: 24%;
+    left: 32%;
+    z-index: 10;
+    pointer-events: none;
+    animation: fisher-idle 3s ease-in-out infinite;
+  }
+  .fisher-body {
+    font-size: 48px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+  .fisher-hat {
+    position: absolute;
+    top: -18px;
+    left: 8px;
+    font-size: 22px;
+    animation: hat-tilt 4s ease-in-out infinite;
+  }
+  @keyframes fisher-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  @keyframes hat-tilt {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  .fisher-character.casting {
+    animation: fisher-cast 0.8s ease-out;
+  }
+  @keyframes fisher-cast {
+    0% { transform: translateY(0) rotate(0); }
+    30% { transform: translateY(-8px) rotate(-10deg); }
+    60% { transform: translateY(2px) rotate(5deg); }
+    100% { transform: translateY(0) rotate(0); }
+  }
+
+  /* SVG fishing line overlay */
+  .fish-line-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9;
+  }
+  .line-path {
+    transition: d 0.8s ease, opacity 0.4s ease;
+  }
+  .line-path.sway {
+    animation: line-sway 2.5s ease-in-out infinite;
+  }
+  @keyframes line-sway {
+    0%, 100% { filter: none; }
+    50% { filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.1)); }
+  }
+
+  /* Bobber (now hidden — SVG circle replaces it for idle, emoji for bite) */
+  .fish-bobber {
+    position: absolute;
+    top: 55%;
+    left: 56%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+  }
+  .fish-bobber.visible {
+    opacity: 1;
+    animation: bobber-float 1.5s ease-in-out infinite;
+  }
+  .fish-bobber.bite {
+    animation: bobber-bite 0.3s ease-in-out infinite;
+  }
+  @keyframes bobber-float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-6px); }
+  }
+  @keyframes bobber-bite {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* Caught fish splash */
+  .fish-catch-splash {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    z-index: 20;
+    animation: fish-catch-anim 1.2s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes fish-catch-anim {
+    0% { transform: translate(-50%, 20%) scale(0.3) rotate(-20deg); opacity: 0; }
+    30% { transform: translate(-50%, -60%) scale(1.2) rotate(10deg); opacity: 1; }
+    60% { transform: translate(-50%, -80%) scale(1) rotate(-5deg); opacity: 1; }
+    100% { transform: translate(-50%, -100%) scale(0.8) rotate(0deg); opacity: 0; }
+  }
+
+  /* Cast instruction */
+  .cast-prompt {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.9);
+    color: var(--ink);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: prompt-pulse 2s ease-in-out infinite;
+    z-index: 15;
+    white-space: nowrap;
+  }
+  @keyframes prompt-pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+  }
+
+  /* Underwater fish swimming */
+  .swimming-fish {
+    position: absolute;
+    font-size: 24px;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .swimming-fish.left-to-right { animation: swim-lr 8s linear infinite; }
+  .swimming-fish.right-to-left { animation: swim-rl 8s linear infinite; transform: scaleX(-1); }
+  @keyframes swim-lr {
+    0% { left: -40px; }
+    100% { left: calc(100% + 40px); }
+  }
+  @keyframes swim-rl {
+    0% { right: -40px; }
+    100% { right: calc(100% + 40px); }
+  }
+
+  /* ---- Fish quiz overlay ---- */
+  .fish-quiz-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 60, 100, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    animation: fadeIn 250ms ease;
+  }
+  .fish-quiz-overlay.hidden { display: none; }
+  .fish-quiz-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 24px 28px 22px;
+    max-width: 500px;
+    width: calc(100% - 32px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    animation: pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .fish-quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .fish-quiz-header .caught-fish { font-size: 36px; }
+  .fish-quiz-header .fish-info { font-size: 14px; color: var(--soft); }
+  .fish-quiz-header .fish-name { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .fish-quiz-progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .fish-quiz-progress .dot {
+    width: 28px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line);
+    transition: background 0.3s ease;
+  }
+  .fish-quiz-progress .dot.correct { background: var(--good); }
+  .fish-quiz-progress .dot.wrong { background: var(--warn); }
+  .fish-quiz-progress .dot.current { background: var(--house, var(--accent)); }
+
+  .fish-quiz-question {
+    margin-bottom: 16px;
+  }
+  .fish-quiz-question .fq-sentence {
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 14px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fbeec3, #f4e0a4);
+    border-radius: 12px;
+    border: 1px solid #d3b878;
+  }
+  .fish-quiz-question .fq-sentence .blank {
+    display: inline-block;
+    min-width: 90px;
+    border-bottom: 2px solid #ad8536;
+    padding: 0 6px;
+    color: transparent;
+    border-radius: 4px 4px 0 0;
+  }
+  .fish-quiz-question .fq-sentence.revealed .blank {
+    color: var(--house, var(--accent));
+    background: rgba(255,255,255,0.5);
+    border-bottom-color: transparent;
+  }
+  .fish-quiz-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .fish-quiz-choices .fq-choice {
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 140ms ease;
+    font-family: inherit;
+  }
+  .fish-quiz-choices .fq-choice:hover { border-color: var(--house, var(--accent)); background: var(--house-soft, var(--accent-soft)); }
+  .fish-quiz-choices .fq-choice.correct { border-color: var(--good); background: #e9f3e9; color: #3f6f3f; }
+  .fish-quiz-choices .fq-choice.wrong { border-color: var(--warn); background: #fbe7e0; color: #8c4530; }
+  .fish-quiz-choices .fq-choice:disabled { cursor: default; }
+  .fish-quiz-choices .fq-choice.dim { opacity: 0.45; }
+
+  .fish-quiz-reveal {
+    border-top: 1px dashed var(--line);
+    padding-top: 10px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--soft);
+  }
+  .fish-quiz-reveal.hidden { display: none; }
+  .fish-quiz-reveal .fqr-word { color: var(--house, var(--accent)); font-weight: 700; font-size: 18px; }
+  .fish-quiz-next {
+    margin-top: 14px;
+    text-align: right;
+  }
+
+  /* Fish result overlay */
+  .fish-result-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 60, 100, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    animation: fadeIn 250ms ease;
+  }
+  .fish-result-overlay.hidden { display: none; }
+  .fish-result-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 32px 28px 24px;
+    max-width: 380px;
+    width: calc(100% - 32px);
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    animation: pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .fish-result-card .result-fish { font-size: 56px; margin-bottom: 8px; }
+  .fish-result-card h2 { margin: 0 0 6px; font-size: 22px; color: var(--house, var(--accent)); }
+  .fish-result-card .result-sub { color: var(--soft); font-size: 14px; margin-bottom: 16px; }
+  .fish-result-card .result-score { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #8a6b18; }
+
+  .fr-review { max-height: 220px; overflow-y: auto; margin-bottom: 16px; text-align: left; }
+  .fr-review-item { padding: 8px 10px; border-radius: 10px; margin-bottom: 6px; font-size: 13px; line-height: 1.4; }
+  .fr-review-item.is-correct { background: #e8f5e9; }
+  .fr-review-item.is-wrong { background: #ffeaea; }
+  .fr-review-word { font-weight: 700; font-size: 14px; }
+  .fr-review-def { color: var(--soft); margin-top: 2px; }
+  .fr-review-picked { color: #c62828; margin-top: 4px; font-size: 12px; }
+  .fr-review-picked b { color: #c62828; }
+
+  /* ---- Inventory / Bucket ---- */
+  .fish-inventory {
+    margin-top: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .fish-inventory h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .fish-bucket {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+  }
+  .fish-bucket-empty {
+    color: var(--soft);
+    font-size: 13px;
+    font-style: italic;
+  }
+  .fish-bucket-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 120ms ease;
+    min-width: 56px;
+  }
+  .fish-bucket-item:hover { border-color: var(--house, var(--accent)); background: var(--house-soft, var(--accent-soft)); }
+  .fish-bucket-item .fbi-emoji { font-size: 28px; line-height: 1; }
+  .fish-bucket-item .fbi-name { font-weight: 600; color: var(--ink); margin-top: 2px; }
+  .fish-bucket-item .fbi-value { color: #8a6b18; font-size: 11px; }
+
+  /* ---- Shop ---- */
+  .fish-shop {
+    margin-top: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .fish-shop h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .shop-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .shop-tab {
+    flex: 1;
+    border: 2px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    padding: 10px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: all 140ms ease;
+    position: relative;
+  }
+  .shop-tab:hover { border-color: var(--house, var(--accent)); background: var(--house-soft, var(--accent-soft)); }
+  .shop-tab.active {
+    border-color: var(--house, var(--accent));
+    background: var(--house-soft, var(--accent-soft));
+    color: var(--house, var(--accent));
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .shop-tab .tab-equipped {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--good);
+    margin-top: 2px;
+  }
+  .shop-cat-desc {
+    font-size: 13px;
+    color: var(--soft);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  .shop-item {
+    border: 1.5px solid var(--line);
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 140ms ease;
+    font-family: inherit;
+  }
+  .shop-item:hover:not(:disabled) { border-color: var(--house, var(--accent)); background: var(--house-soft, var(--accent-soft)); transform: translateY(-2px); }
+  .shop-item:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .shop-item .si-icon { font-size: 28px; line-height: 1; margin-bottom: 4px; }
+  .shop-item .si-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .shop-item .si-desc { font-size: 11px; color: var(--soft); margin: 2px 0; }
+  .shop-item .si-cost { font-size: 12px; color: #8a6b18; font-weight: 700; }
+  .shop-item.owned { border-color: var(--good); background: #e9f3e9; }
+  .shop-item.equipped { border-color: #d4a83a; background: #fff9d6; box-shadow: 0 0 0 2px rgba(212,168,58,0.3); }
+
+  /* Fish coins display in fishing mode */
+  .fish-coins {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #8a6b18;
+  }
+
+  @media (max-width: 540px) {
+    .pond-scene { min-height: 300px; }
+    .fish-quiz-choices { grid-template-columns: 1fr; }
+    .shop-items { grid-template-columns: 1fr 1fr; }
+    .fish-quiz-card { padding: 18px 16px 16px; }
+  }
 </style>
 </head>
 <body>
@@ -988,6 +1611,10 @@
         <button id="switchProfileBtn" class="link-btn" title="Switch player">Switch</button>
       </div>
     </div>
+    <div class="mode-switcher" id="modeSwitcher">
+      <button class="active" data-mode="vocab">🪄 Word Quest</button>
+      <button data-mode="fishing">🎣 Fishing</button>
+    </div>
     <div class="score-bar">
       <div class="score-chip galleons" title="Galleons earned — 1000 = $1"><span class="coin">🪙</span> <span id="galleonsCount">0</span></div>
       <button class="score-chip redeem hidden" id="redeemChip" title="Tap to redeem">💵 Redeem $1</button>
@@ -997,6 +1624,8 @@
     <div class="toast hidden" id="toast"></div>
   </header>
 
+  <!-- ======== VOCAB GAME MODE ======== -->
+  <div class="vocab-game active" id="vocabGame">
   <div class="controls">
     <select id="listFilter" title="Filter by list">
       <option value="all">All words</option>
@@ -1081,6 +1710,91 @@
   <div class="footer">
     <span id="footerStats"></span>
   </div>
+  </div><!-- end vocab-game -->
+
+  <!-- ======== FISHING GAME MODE ======== -->
+  <div class="fishing-game" id="fishingGame">
+    <div class="fish-lesson-picker">
+      <label for="fishLessonSelect">🎣 Fishing Spot:</label>
+      <select id="fishLessonSelect"></select>
+      <div class="fish-coins"><span>🪙</span> <span id="fishCoins">0</span></div>
+    </div>
+
+    <div class="char-picker" id="charPicker"></div>
+
+    <div class="pond-scene" id="pondScene">
+      <div class="pond-sun">☀️</div>
+      <div class="pond-clouds">☁️ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☁️ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☁️ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☁️ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☁️</div>
+      <div class="pond-bank"></div>
+      <div class="pond-water" id="pondWater"></div>
+      <div class="fisher-character" id="fisherChar">
+        <div class="fisher-body">🐧</div>
+        <div class="fisher-hat">🎩</div>
+      </div>
+      <svg class="fish-line-svg" id="fishLineSvg" viewBox="0 0 600 400" preserveAspectRatio="none">
+        <path class="rod-path" d="M 230 145 L 330 95" stroke="#8B4513" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path class="rod-path rod-handle" d="M 225 148 L 240 155" stroke="#654321" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path class="line-path" id="linePath" d="M 330 95 C 340 95, 340 95, 340 95" stroke="#888" stroke-width="1.2" stroke-dasharray="none" fill="none" opacity="0"/>
+        <circle class="bobber-circle" id="bobberCircle" cx="340" cy="95" r="0" fill="#e53935" opacity="0"/>
+      </svg>
+      <div class="fish-bobber" id="fishBobber">🔴</div>
+      <div class="cast-prompt" id="castPrompt">Tap to cast your line! 🎣</div>
+    </div>
+
+    <!-- Quiz overlay (5 questions per fish) -->
+    <div class="fish-quiz-overlay hidden" id="fishQuizOverlay">
+      <div class="fish-quiz-card">
+        <div class="fish-quiz-header">
+          <div>
+            <div class="fish-name" id="fqFishName">Goldfish</div>
+            <div class="fish-info" id="fqFishInfo">Question 1 of 5</div>
+          </div>
+          <div class="caught-fish" id="fqFishEmoji">🐟</div>
+        </div>
+        <div class="fish-quiz-progress" id="fqProgress"></div>
+        <div class="fish-quiz-question">
+          <div class="fq-sentence" id="fqSentence"></div>
+          <div class="fish-quiz-choices" id="fqChoices"></div>
+        </div>
+        <div class="fish-quiz-reveal hidden" id="fqReveal">
+          <span class="fqr-word" id="fqrWord"></span>
+          <span id="fqrIpa"></span> — <span id="fqrZh"></span>
+        </div>
+        <div class="fish-quiz-next">
+          <button class="btn primary" id="fqNextBtn">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result after 5 questions -->
+    <div class="fish-result-overlay hidden" id="fishResultOverlay">
+      <div class="fish-result-card">
+        <div class="result-fish" id="frFishEmoji">🐟</div>
+        <h2 id="frTitle">Nice Catch!</h2>
+        <div class="result-sub" id="frSub">You got 4 out of 5 right!</div>
+        <div class="result-score" id="frScore"></div>
+        <div class="fr-review" id="frReview"></div>
+        <button class="btn primary" id="frContinueBtn">Keep Fishing →</button>
+      </div>
+    </div>
+
+    <!-- Bucket / inventory -->
+    <div class="fish-inventory" id="fishInventory">
+      <h3>🪣 Your Bucket <button class="btn" id="sellAllBtn" style="font-size:12px;padding:4px 10px">Sell All</button></h3>
+      <div class="fish-bucket" id="fishBucket">
+        <div class="fish-bucket-empty">No fish yet — cast your line!</div>
+      </div>
+    </div>
+
+    <!-- Shop -->
+    <div class="fish-shop" id="fishShop">
+      <h3>🏪 Tackle Shop</h3>
+      <div class="shop-tabs" id="shopTabs"></div>
+      <div class="shop-cat-desc" id="shopCatDesc"></div>
+      <div class="shop-items" id="shopItems"></div>
+    </div>
+  </div><!-- end fishing-game -->
+
 </div>
 
 <script>
@@ -1983,6 +2697,7 @@ function activateProfile(id) {
   } else {
     applyHouseTheme(state.house);
     bootGame();
+    initFishingGame();
   }
 }
 
@@ -1996,6 +2711,7 @@ function onHouseChosen(house) {
   applyHouseTheme(house);
   document.getElementById('sortingHat').classList.add('hidden');
   bootGame();
+  initFishingGame();
 }
 function applyHouseTheme(house) {
   document.body.classList.remove('house-gryffindor','house-slytherin','house-hufflepuff','house-ravenclaw');
@@ -2019,6 +2735,696 @@ function bootGame() {
   }
 }
 
+// ================================================================
+// ======================== FISHING GAME ==========================
+// ================================================================
+
+const FISH_TYPES = [
+  { emoji: '🐟', name: 'Bluegill',    rarity: 'common',    value: 10,  minCorrect: 0 },
+  { emoji: '🐠', name: 'Clownfish',   rarity: 'common',    value: 15,  minCorrect: 0 },
+  { emoji: '🐡', name: 'Pufferfish',  rarity: 'uncommon',  value: 25,  minCorrect: 0 },
+  { emoji: '🦈', name: 'Shark',       rarity: 'rare',      value: 50,  minCorrect: 0 },
+  { emoji: '🐙', name: 'Octopus',     rarity: 'rare',      value: 60,  minCorrect: 0 },
+  { emoji: '🐳', name: 'Whale',       rarity: 'epic',      value: 100, minCorrect: 0 },
+  { emoji: '🐉', name: 'Sea Dragon',  rarity: 'legendary', value: 200, minCorrect: 0 },
+  { emoji: '🦑', name: 'Giant Squid', rarity: 'epic',      value: 80,  minCorrect: 0 },
+  { emoji: '🐬', name: 'Dolphin',     rarity: 'uncommon',  value: 30,  minCorrect: 0 },
+  { emoji: '🦐', name: 'Shrimp',      rarity: 'common',    value: 8,   minCorrect: 0 },
+  { emoji: '🦀', name: 'Crab',        rarity: 'common',    value: 12,  minCorrect: 0 },
+  { emoji: '🐢', name: 'Sea Turtle',  rarity: 'uncommon',  value: 35,  minCorrect: 0 },
+];
+
+const RARITY_WEIGHTS = { common: 50, uncommon: 25, rare: 12, epic: 5, legendary: 1 };
+const RARITY_COLORS  = { common: '#6b675e', uncommon: '#2da38a', rare: '#3a6dd4', epic: '#9b59b6', legendary: '#d4a83a' };
+
+const FISHER_CHARACTERS = [
+  { id: 'girl',    emoji: '👧', name: 'Girl',    cost: 0 },
+  { id: 'boy',     emoji: '👦', name: 'Boy',     cost: 0 },
+  { id: 'penguin', emoji: '🐧', name: 'Penguin', cost: 0 },
+  { id: 'cat',     emoji: '🐱', name: 'Cat',     cost: 0 },
+  { id: 'dog',     emoji: '🐶', name: 'Dog',     cost: 0 },
+  { id: 'wizard',  emoji: '🧙', name: 'Wizard',  cost: 50 },
+  { id: 'fairy',   emoji: '🧚', name: 'Fairy',   cost: 80 },
+  { id: 'mermaid', emoji: '🧜', name: 'Mermaid', cost: 120 },
+  { id: 'dragon',  emoji: '🐲', name: 'Dragon',  cost: 200 },
+  { id: 'unicorn', emoji: '🦄', name: 'Unicorn', cost: 300 },
+];
+
+const SHOP_CATEGORIES = [
+  { id: 'outfit', label: '👗 Outfit', desc: 'Lucky clothes boost your fishing!' },
+  { id: 'hook',   label: '🪝 Hook',   desc: 'Better hooks catch rarer fish' },
+  { id: 'bait',   label: '🪱 Bait',   desc: 'Bait attracts better fish' },
+  { id: 'line',   label: '🧵 Line',   desc: 'Lines give bonus rewards' },
+  { id: 'rod',    label: '🎣 Rod',    desc: 'Rods change bite speed' },
+];
+
+const SHOP_ITEMS = [
+  { id: 'outfit_cap',     cat: 'outfit', icon: '🧢', name: 'Lucky Cap',      desc: '+10% luck (5 trips)',       cost: 40,  luckBoost: 1.1, accessory: '🧢', maxUses: 5 },
+  { id: 'outfit_scarf',   cat: 'outfit', icon: '🧣', name: 'Cozy Scarf',     desc: '+20% luck (5 trips)',       cost: 90,  luckBoost: 1.2, accessory: '🧣', maxUses: 5 },
+  { id: 'outfit_boots',   cat: 'outfit', icon: '👢', name: 'Rain Boots',     desc: '+30% luck (5 trips)',       cost: 160, luckBoost: 1.3, accessory: '👢', maxUses: 5 },
+  { id: 'outfit_crown',   cat: 'outfit', icon: '👑', name: 'Royal Crown',    desc: '+50% luck (4 trips)',       cost: 350, luckBoost: 1.5, accessory: '👑', maxUses: 4 },
+  { id: 'outfit_cape',    cat: 'outfit', icon: '🦸', name: 'Star Cape',      desc: 'Double luck! (3 trips)',    cost: 700, luckBoost: 2.0, accessory: '✨', maxUses: 3 },
+  { id: 'hook_bronze',  cat: 'hook', icon: '🪝', name: 'Bronze Hook',    desc: 'Slightly better odds',       cost: 50,  rarityBoost: 1.2 },
+  { id: 'hook_silver',  cat: 'hook', icon: '⚓', name: 'Silver Hook',    desc: 'Good odds for rare fish',     cost: 150, rarityBoost: 1.5 },
+  { id: 'hook_gold',    cat: 'hook', icon: '🔱', name: 'Golden Trident', desc: 'Great odds for rare fish',    cost: 400, rarityBoost: 2.0 },
+  { id: 'bait_worm',    cat: 'bait', icon: '🪱', name: 'Magic Worm',    desc: 'Uncommon+ (3 trips)',         cost: 30,  filterCommon: true, maxUses: 3 },
+  { id: 'bait_sparkle', cat: 'bait', icon: '✨', name: 'Sparkle Bait',  desc: 'Rare+ fish (3 trips)',        cost: 100, filterUncommon: true, maxUses: 3 },
+  { id: 'bait_golden',  cat: 'bait', icon: '🌟', name: 'Golden Bait',   desc: 'Epic+ fish (2 trips)',        cost: 300, filterRare: true, maxUses: 2 },
+  { id: 'line_strong',  cat: 'line', icon: '🧵', name: 'Strong Line',   desc: '+20% bonus coins per fish',   cost: 60,  coinBonus: 1.2 },
+  { id: 'line_magic',   cat: 'line', icon: '💜', name: 'Magic Line',    desc: '+50% bonus coins per fish',   cost: 180, coinBonus: 1.5 },
+  { id: 'line_golden',  cat: 'line', icon: '🌕', name: 'Golden Line',   desc: 'Double coins per fish!',      cost: 500, coinBonus: 2.0 },
+  { id: 'rod_bamboo',   cat: 'rod',  icon: '🎋', name: 'Bamboo Rod',    desc: 'Faster bite time',            cost: 80,  speedBoost: 0.7 },
+  { id: 'rod_enchanted',cat: 'rod',  icon: '🪄', name: 'Enchanted Rod', desc: 'Much faster bite time',       cost: 250, speedBoost: 0.4 },
+  { id: 'rod_dragon',   cat: 'rod',  icon: '🐉', name: 'Dragon Rod',    desc: 'Lightning fast + deep water', cost: 600, speedBoost: 0.25, deepWater: true },
+];
+
+let fishState = {
+  coins: 0,
+  bucket: [],
+  ownedItems: [],
+  itemUses: {},
+  equippedHook: null,
+  equippedBait: null,
+  equippedLine: null,
+  equippedRod: null,
+  equippedOutfit: null,
+  character: 'girl',
+  unlockedChars: ['girl','boy','penguin','cat','dog'],
+  totalFishCaught: 0,
+  totalCoinsEarned: 0,
+};
+
+let fishGamePhase = 'idle'; // idle, casting, waiting, bite, catching, quiz, result
+let currentCaughtFish = null;
+let fishQuizWords = [];
+let fishQuizIndex = 0;
+let fishQuizScore = 0;
+let fishQuizAnswered = false;
+let fishQuizResults = [];
+let fishSelectedLesson = null;
+
+function fishLsKey() { return "fishgame_" + currentProfile + "_v1"; }
+
+function loadFishState() {
+  if (!LS_OK || !currentProfile) return;
+  try {
+    const raw = localStorage.getItem(fishLsKey());
+    if (raw) fishState = Object.assign({ coins: 0, bucket: [], ownedItems: [], itemUses: {}, equippedHook: null, equippedBait: null, equippedLine: null, equippedRod: null, equippedOutfit: null, character: 'girl', unlockedChars: ['girl','boy','penguin','cat','dog'], totalFishCaught: 0, totalCoinsEarned: 0 }, JSON.parse(raw));
+  } catch (e) {}
+}
+
+function saveFishState() {
+  if (!LS_OK || !currentProfile) return;
+  try { localStorage.setItem(fishLsKey(), JSON.stringify(fishState)); } catch (e) {}
+}
+
+function getEquippedItem(id) {
+  return SHOP_ITEMS.find(i => i.id === id) || null;
+}
+
+function consumeEquippedItems() {
+  ['equippedBait', 'equippedOutfit'].forEach(slot => {
+    const id = fishState[slot];
+    if (!id) return;
+    const item = getEquippedItem(id);
+    if (!item || !item.maxUses) return;
+    if (fishState.itemUses[id] === undefined) fishState.itemUses[id] = item.maxUses;
+    fishState.itemUses[id]--;
+    if (fishState.itemUses[id] <= 0) {
+      fishState[slot] = null;
+      fishState.ownedItems = fishState.ownedItems.filter(i => i !== id);
+      delete fishState.itemUses[id];
+      showToast(`${item.icon} ${item.name} used up!`);
+    }
+  });
+  saveFishState();
+}
+
+function rollFish() {
+  const hook   = getEquippedItem(fishState.equippedHook);
+  const bait   = getEquippedItem(fishState.equippedBait);
+  const rod    = getEquippedItem(fishState.equippedRod);
+  const outfit = getEquippedItem(fishState.equippedOutfit);
+  const hookBoost   = hook ? hook.rarityBoost : 1;
+  const outfitBoost = outfit ? outfit.luckBoost : 1;
+  const rarityBoost = hookBoost * outfitBoost;
+
+  let pool = FISH_TYPES.slice();
+  if (bait && bait.filterCommon) pool = pool.filter(f => f.rarity !== 'common');
+  if (bait && bait.filterUncommon) pool = pool.filter(f => f.rarity !== 'common' && f.rarity !== 'uncommon');
+  if (bait && bait.filterRare) pool = pool.filter(f => f.rarity !== 'common' && f.rarity !== 'uncommon' && f.rarity !== 'rare');
+  if ((!rod || !rod.deepWater)) pool = pool.filter(f => f.rarity !== 'legendary');
+  if (pool.length === 0) pool = FISH_TYPES.filter(f => f.rarity === 'common');
+
+  const weighted = pool.map(f => {
+    let w = RARITY_WEIGHTS[f.rarity] || 10;
+    if (f.rarity !== 'common') w *= rarityBoost;
+    return { fish: f, w };
+  });
+  const total = weighted.reduce((s, x) => s + x.w, 0);
+  let r = Math.random() * total;
+  for (const { fish, w } of weighted) {
+    r -= w;
+    if (r <= 0) return fish;
+  }
+  return weighted[weighted.length - 1].fish;
+}
+
+function getFishingLessonWords() {
+  if (!DATA || DATA.length === 0) return [];
+  if (fishSelectedLesson === null || fishSelectedLesson === 'all') return DATA.slice();
+  const listId = parseInt(fishSelectedLesson);
+  return DATA.filter(w => w.list === listId);
+}
+
+function pickFishQuizWords(n) {
+  const pool = getFishingLessonWords();
+  if (pool.length === 0) return [];
+  const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(n, shuffled.length));
+}
+
+function buildCharPicker() {
+  const el = document.getElementById('charPicker');
+  if (!el) return;
+  el.innerHTML = '';
+  FISHER_CHARACTERS.forEach(ch => {
+    const unlocked = fishState.unlockedChars.includes(ch.id);
+    const active = fishState.character === ch.id;
+    const btn = document.createElement('button');
+    btn.className = 'char-pick' + (active ? ' active' : '') + (!unlocked ? ' locked' : '');
+    btn.innerHTML = `<span class="cp-emoji">${ch.emoji}</span><span class="cp-name">${ch.name}</span>${!unlocked ? '<span class="cp-cost">' + ch.cost + ' 🪙</span>' : ''}`;
+    btn.onclick = () => {
+      if (unlocked) {
+        fishState.character = ch.id;
+        saveFishState();
+        buildCharPicker();
+        updateFisherCharacter();
+      } else if (fishState.coins >= ch.cost) {
+        fishState.coins -= ch.cost;
+        fishState.unlockedChars.push(ch.id);
+        fishState.character = ch.id;
+        saveFishState();
+        buildCharPicker();
+        updateFisherCharacter();
+        updateFishUI();
+        showToast(`Unlocked ${ch.emoji} ${ch.name}!`);
+      } else {
+        showToast(`Need ${ch.cost} 🪙 to unlock ${ch.name}!`);
+      }
+    };
+    el.appendChild(btn);
+  });
+}
+
+function updateFisherCharacter() {
+  const ch = FISHER_CHARACTERS.find(c => c.id === fishState.character) || FISHER_CHARACTERS[0];
+  const bodyEl = document.querySelector('.fisher-body');
+  if (bodyEl) bodyEl.textContent = ch.emoji;
+  const hatEl = document.querySelector('.fisher-hat');
+  if (hatEl) {
+    const outfit = getEquippedItem(fishState.equippedOutfit);
+    if (outfit && outfit.accessory) {
+      hatEl.textContent = outfit.accessory;
+      hatEl.style.display = '';
+    } else {
+      hatEl.style.display = 'none';
+    }
+  }
+  const existingAcc = document.querySelector('.fisher-accessory');
+  if (existingAcc) existingAcc.remove();
+}
+
+function buildFishLessonPicker() {
+  const sel = document.getElementById('fishLessonSelect');
+  if (!sel || !currentProfile) return;
+  sel.innerHTML = '';
+  const corpusLists = CORPORA[currentProfile].lists || [];
+  const opt0 = document.createElement('option');
+  opt0.value = 'all';
+  opt0.textContent = '🌊 All Words (Open Ocean)';
+  sel.appendChild(opt0);
+  for (const id of corpusLists) {
+    const o = document.createElement('option');
+    o.value = id;
+    o.textContent = id === 0 ? '🏝️ Lesson 1 Cove' : `🏝️ List ${id} Pond`;
+    sel.appendChild(o);
+  }
+  sel.value = fishSelectedLesson || 'all';
+  sel.onchange = () => { fishSelectedLesson = sel.value; };
+}
+
+function addSwimmingFish() {
+  const water = document.getElementById('pondWater');
+  if (!water) return;
+  water.querySelectorAll('.swimming-fish').forEach(f => f.remove());
+  const fishEmojis = ['🐟','🐠','🐡','🐬','🦐','🦀'];
+  for (let i = 0; i < 4; i++) {
+    const span = document.createElement('span');
+    span.className = 'swimming-fish ' + (Math.random() > 0.5 ? 'left-to-right' : 'right-to-left');
+    span.textContent = fishEmojis[Math.floor(Math.random() * fishEmojis.length)];
+    span.style.top = (20 + Math.random() * 60) + '%';
+    span.style.animationDuration = (6 + Math.random() * 6) + 's';
+    span.style.animationDelay = (Math.random() * 5) + 's';
+    span.style.fontSize = (18 + Math.random() * 14) + 'px';
+    water.appendChild(span);
+  }
+}
+
+function addRipple(x, yPct) {
+  const water = document.getElementById('pondWater');
+  if (!water) return;
+  const ripple = document.createElement('div');
+  ripple.className = 'pond-ripple';
+  ripple.style.left = x + 'px';
+  ripple.style.top = yPct + '%';
+  water.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 2000);
+}
+
+function animateLine(phase) {
+  const line = document.getElementById('linePath');
+  const bobberC = document.getElementById('bobberCircle');
+  if (!line) return;
+  if (phase === 'cast') {
+    line.setAttribute('opacity', '1');
+    line.setAttribute('d', 'M 330 95 C 350 180, 330 220, 340 260');
+    bobberC.setAttribute('cx', '340');
+    bobberC.setAttribute('cy', '260');
+    bobberC.setAttribute('r', '5');
+    bobberC.setAttribute('opacity', '1');
+    line.classList.add('sway');
+  } else if (phase === 'bite') {
+    line.setAttribute('d', 'M 330 95 C 355 190, 320 240, 340 275');
+  } else {
+    line.setAttribute('opacity', '0');
+    bobberC.setAttribute('opacity', '0');
+    bobberC.setAttribute('r', '0');
+    line.classList.remove('sway');
+  }
+}
+
+function startCast() {
+  if (fishGamePhase !== 'idle') return;
+  const lessonWords = getFishingLessonWords();
+  if (lessonWords.length < 4) {
+    showToast('Need at least 4 words in this fishing spot! Pick a different one.');
+    return;
+  }
+  fishGamePhase = 'casting';
+  const fisher = document.getElementById('fisherChar');
+  const bobber = document.getElementById('fishBobber');
+  const prompt = document.getElementById('castPrompt');
+  prompt.style.display = 'none';
+  fisher.classList.add('casting');
+  setTimeout(() => {
+    fisher.classList.remove('casting');
+    animateLine('cast');
+    bobber.classList.add('visible');
+    fishGamePhase = 'waiting';
+    addRipple(200, 30);
+    const rodItem = getEquippedItem(fishState.equippedRod);
+    const speedMult = rodItem ? rodItem.speedBoost : 1;
+    const waitTime = (1500 + Math.random() * 2500) * speedMult;
+    setTimeout(() => {
+      if (fishGamePhase !== 'waiting') return;
+      fishGamePhase = 'bite';
+      bobber.classList.add('bite');
+      animateLine('bite');
+      addRipple(200, 30);
+      setTimeout(() => {
+        if (fishGamePhase !== 'bite') return;
+        catchFish();
+      }, 600 + Math.random() * 400);
+    }, waitTime);
+  }, 800);
+}
+
+function catchFish() {
+  fishGamePhase = 'catching';
+  const bobber = document.getElementById('fishBobber');
+  bobber.classList.remove('visible', 'bite');
+  animateLine('hide');
+  currentCaughtFish = rollFish();
+  const pond = document.getElementById('pondScene');
+  const splash = document.createElement('div');
+  splash.className = 'fish-catch-splash';
+  splash.textContent = currentCaughtFish.emoji;
+  pond.appendChild(splash);
+  setTimeout(() => {
+    splash.remove();
+    startFishQuiz();
+  }, 1200);
+}
+
+function startFishQuiz() {
+  fishGamePhase = 'quiz';
+  fishQuizWords = pickFishQuizWords(5);
+  fishQuizIndex = 0;
+  fishQuizScore = 0;
+  fishQuizResults = [];
+  document.getElementById('fqFishName').textContent = currentCaughtFish.name;
+  document.getElementById('fqFishEmoji').textContent = currentCaughtFish.emoji;
+  document.getElementById('fqFishName').style.color = RARITY_COLORS[currentCaughtFish.rarity] || '#333';
+  renderFishQuizProgress();
+  renderFishQuizQuestion();
+  document.getElementById('fishQuizOverlay').classList.remove('hidden');
+}
+
+function renderFishQuizProgress() {
+  const el = document.getElementById('fqProgress');
+  el.innerHTML = '';
+  for (let i = 0; i < fishQuizWords.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    if (i < fishQuizResults.length) {
+      dot.classList.add(fishQuizResults[i].correct ? 'correct' : 'wrong');
+    } else if (i === fishQuizIndex) {
+      dot.classList.add('current');
+    }
+    el.appendChild(dot);
+  }
+  document.getElementById('fqFishInfo').textContent = `Question ${fishQuizIndex + 1} of ${fishQuizWords.length}`;
+}
+
+function renderFishQuizQuestion() {
+  fishQuizAnswered = false;
+  const w = fishQuizWords[fishQuizIndex];
+  if (!w) return;
+  const sentEl = document.getElementById('fqSentence');
+  sentEl.classList.remove('revealed');
+  sentEl.innerHTML = w.sentence ? clozeSentence(w.sentence, w.word) : defClozeSentence(w.en, w.word);
+  const targetIdx = DATA.indexOf(w);
+  const distractors = pickDistractors(targetIdx, 3);
+  const options = [targetIdx, ...distractors].sort(() => Math.random() - 0.5);
+  const choicesEl = document.getElementById('fqChoices');
+  choicesEl.innerHTML = '';
+  options.forEach(idx => {
+    const wi = DATA[idx];
+    const btn = document.createElement('button');
+    btn.className = 'fq-choice';
+    btn.textContent = wi.word;
+    btn.onclick = () => onFishQuizChoice(btn, idx, targetIdx);
+    choicesEl.appendChild(btn);
+  });
+  document.getElementById('fqReveal').classList.add('hidden');
+  document.getElementById('fqNextBtn').textContent = 'Next →';
+}
+
+function onFishQuizChoice(btn, chosenIdx, correctIdx) {
+  if (fishQuizAnswered) return;
+  fishQuizAnswered = true;
+  const correct = chosenIdx === correctIdx;
+  document.querySelectorAll('#fqChoices .fq-choice').forEach(b => {
+    b.disabled = true;
+    if (b !== btn) b.classList.add('dim');
+  });
+  if (correct) {
+    btn.classList.add('correct');
+    fishQuizScore++;
+    fishQuizResults.push({ correct: true, word: DATA[correctIdx] });
+    state.marks[DATA[correctIdx].word] = 'known';
+  } else {
+    btn.classList.add('wrong');
+    fishQuizResults.push({ correct: false, word: DATA[correctIdx], chosen: DATA[chosenIdx] });
+    const correctWord = DATA[correctIdx].word;
+    document.querySelectorAll('#fqChoices .fq-choice').forEach(b => {
+      if (b.textContent === correctWord) { b.classList.add('correct'); b.classList.remove('dim'); }
+    });
+    state.marks[correctWord] = 'learning';
+  }
+  saveState();
+  const w = DATA[correctIdx];
+  document.getElementById('fqrWord').textContent = w.word;
+  document.getElementById('fqrIpa').textContent = w.ipa || '';
+  document.getElementById('fqrZh').textContent = w.zh || '';
+  document.getElementById('fqReveal').classList.remove('hidden');
+  document.getElementById('fqSentence').classList.add('revealed');
+  renderFishQuizProgress();
+  if (fishQuizIndex >= fishQuizWords.length - 1) {
+    document.getElementById('fqNextBtn').textContent = 'See Results →';
+  }
+}
+
+function nextFishQuizQuestion() {
+  if (!fishQuizAnswered) return;
+  fishQuizIndex++;
+  if (fishQuizIndex >= fishQuizWords.length) {
+    document.getElementById('fishQuizOverlay').classList.add('hidden');
+    showFishResult();
+    return;
+  }
+  renderFishQuizQuestion();
+  renderFishQuizProgress();
+}
+
+function showFishResult() {
+  fishGamePhase = 'result';
+  const kept = fishQuizScore >= 3;
+  const perfect = fishQuizScore === fishQuizWords.length;
+  const wrongCount = fishQuizWords.length - fishQuizScore;
+  const penalty = wrongCount * 2;
+  document.getElementById('frFishEmoji').textContent = currentCaughtFish.emoji;
+
+  consumeEquippedItems();
+
+  if (kept) {
+    let earnedCoins = currentCaughtFish.value;
+    const lineItem = getEquippedItem(fishState.equippedLine);
+    if (lineItem && lineItem.coinBonus) earnedCoins = Math.round(earnedCoins * lineItem.coinBonus);
+    if (perfect) {
+      earnedCoins = Math.round(earnedCoins * 1.5);
+    } else if (fishQuizScore === 3) {
+      earnedCoins = Math.round(earnedCoins * 0.5);
+    }
+    const netCoins = Math.max(0, earnedCoins - penalty);
+    document.getElementById('frTitle').textContent = perfect ? '🌟 Perfect Catch!' : 'Nice Catch!';
+    let sub = `You got ${fishQuizScore} out of ${fishQuizWords.length} right!`;
+    if (perfect) sub += ' Bonus coins!';
+    if (penalty > 0) sub += ` (−${penalty} for ${wrongCount} wrong)`;
+    document.getElementById('frSub').textContent = sub;
+    fishState.coins += netCoins;
+    fishState.totalCoinsEarned += netCoins;
+    fishState.totalFishCaught++;
+    fishState.bucket.push({ emoji: currentCaughtFish.emoji, name: currentCaughtFish.name, rarity: currentCaughtFish.rarity, value: currentCaughtFish.value });
+    document.getElementById('frScore').textContent = `+${netCoins} 🪙`;
+  } else {
+    const lostCoins = Math.min(penalty, fishState.coins);
+    fishState.coins = Math.max(0, fishState.coins - penalty);
+    document.getElementById('frTitle').textContent = 'The fish got away...';
+    document.getElementById('frSub').textContent =
+      `You got ${fishQuizScore} out of ${fishQuizWords.length}. Need at least 3!` +
+      (lostCoins > 0 ? ` Lost ${lostCoins} 🪙 for wrong answers.` : '');
+    document.getElementById('frScore').textContent = lostCoins > 0 ? `−${lostCoins} 🪙` : '';
+  }
+  saveFishState();
+  updateFishUI();
+  buildCharPicker();
+  const reviewEl = document.getElementById('frReview');
+  reviewEl.innerHTML = '';
+  fishQuizResults.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'fr-review-item ' + (r.correct ? 'is-correct' : 'is-wrong');
+    const w = r.word;
+    let html = `<div class="fr-review-word">${r.correct ? '✅' : '❌'} ${escapeHTML(w.word)}</div>`;
+    html += `<div class="fr-review-def">${escapeHTML(w.en)}${w.zh ? ' — ' + escapeHTML(w.zh) : ''}</div>`;
+    if (!r.correct && r.chosen) {
+      html += `<div class="fr-review-picked">You picked: <b>${escapeHTML(r.chosen.word)}</b> — ${escapeHTML(r.chosen.en)}${r.chosen.zh ? ' (' + escapeHTML(r.chosen.zh) + ')' : ''}</div>`;
+    }
+    div.innerHTML = html;
+    reviewEl.appendChild(div);
+  });
+  document.getElementById('fishResultOverlay').classList.remove('hidden');
+}
+
+function closeFishResult() {
+  document.getElementById('fishResultOverlay').classList.add('hidden');
+  fishGamePhase = 'idle';
+  document.getElementById('castPrompt').style.display = '';
+  currentCaughtFish = null;
+}
+
+function updateFishUI() {
+  document.getElementById('fishCoins').textContent = fishState.coins;
+  renderFishBucket();
+  renderShop();
+}
+
+function renderFishBucket() {
+  const el = document.getElementById('fishBucket');
+  if (fishState.bucket.length === 0) {
+    el.innerHTML = '<div class="fish-bucket-empty">No fish yet — cast your line!</div>';
+    return;
+  }
+  el.innerHTML = '';
+  fishState.bucket.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'fish-bucket-item';
+    item.title = `Sell for ${f.value} coins`;
+    item.innerHTML = `<span class="fbi-emoji">${f.emoji}</span><span class="fbi-name">${escapeHTML(f.name)}</span><span class="fbi-value">${f.value} 🪙</span>`;
+    item.onclick = () => sellFish(i);
+    el.appendChild(item);
+  });
+}
+
+function sellFish(index) {
+  const fish = fishState.bucket[index];
+  if (!fish) return;
+  fishState.coins += fish.value;
+  fishState.totalCoinsEarned += fish.value;
+  fishState.bucket.splice(index, 1);
+  saveFishState();
+  updateFishUI();
+  showToast(`Sold ${fish.emoji} ${fish.name} for ${fish.value} 🪙!`);
+}
+
+function sellAllFish() {
+  if (fishState.bucket.length === 0) return;
+  const total = fishState.bucket.reduce((s, f) => s + f.value, 0);
+  fishState.coins += total;
+  fishState.totalCoinsEarned += total;
+  const count = fishState.bucket.length;
+  fishState.bucket = [];
+  saveFishState();
+  updateFishUI();
+  showToast(`Sold ${count} fish for ${total} 🪙!`);
+}
+
+let activeShopTab = 'outfit';
+
+function renderShopTabs() {
+  const tabsEl = document.getElementById('shopTabs');
+  tabsEl.innerHTML = '';
+  const equippedMap = {
+    outfit: fishState.equippedOutfit,
+    hook: fishState.equippedHook,
+    bait: fishState.equippedBait,
+    line: fishState.equippedLine,
+    rod:  fishState.equippedRod,
+  };
+  SHOP_CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'shop-tab' + (activeShopTab === cat.id ? ' active' : '');
+    const eqId = equippedMap[cat.id];
+    const eqItem = eqId ? SHOP_ITEMS.find(i => i.id === eqId) : null;
+    btn.innerHTML = cat.label + (eqItem ? `<span class="tab-equipped">${eqItem.icon} ${eqItem.name}</span>` : '<span class="tab-equipped">None</span>');
+    btn.onclick = () => { activeShopTab = cat.id; renderShop(); };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function renderShop() {
+  renderShopTabs();
+  const cat = SHOP_CATEGORIES.find(c => c.id === activeShopTab);
+  document.getElementById('shopCatDesc').textContent = cat ? cat.desc : '';
+  const el = document.getElementById('shopItems');
+  el.innerHTML = '';
+  const items = SHOP_ITEMS.filter(i => i.cat === activeShopTab);
+  const equippedMap = {
+    outfit: fishState.equippedOutfit,
+    hook: fishState.equippedHook,
+    bait: fishState.equippedBait,
+    line: fishState.equippedLine,
+    rod:  fishState.equippedRod,
+  };
+  items.forEach(item => {
+    const owned = fishState.ownedItems.includes(item.id);
+    const equipped = equippedMap[item.cat] === item.id;
+    const canAfford = fishState.coins >= item.cost;
+    const btn = document.createElement('button');
+    btn.className = 'shop-item' + (equipped ? ' equipped' : owned ? ' owned' : '');
+    btn.disabled = !owned && !canAfford;
+    let statusText;
+    if (owned) {
+      if (equipped) {
+        const uses = item.maxUses ? fishState.itemUses[item.id] : null;
+        statusText = uses != null ? `✅ Equipped (${uses}/${item.maxUses} left)` : '✅ Equipped';
+      } else {
+        const uses = item.maxUses ? fishState.itemUses[item.id] : null;
+        statusText = uses != null ? `Tap to equip (${uses}/${item.maxUses} left)` : 'Tap to equip';
+      }
+    } else {
+      statusText = item.cost + ' 🪙';
+    }
+    btn.innerHTML = `<div class="si-icon">${item.icon}</div><div class="si-name">${escapeHTML(item.name)}</div><div class="si-desc">${escapeHTML(item.desc)}</div><div class="si-cost">${statusText}</div>`;
+    btn.onclick = () => {
+      if (owned) {
+        equipItem(item);
+      } else if (canAfford) {
+        buyItem(item);
+      }
+    };
+    el.appendChild(btn);
+  });
+}
+
+function buyItem(item) {
+  if (fishState.coins < item.cost) return;
+  fishState.coins -= item.cost;
+  fishState.ownedItems.push(item.id);
+  if (item.maxUses) fishState.itemUses[item.id] = item.maxUses;
+  equipItem(item);
+  saveFishState();
+  updateFishUI();
+  showToast(`Bought ${item.icon} ${item.name}!`);
+}
+
+function equipItem(item) {
+  if (item.cat === 'hook') fishState.equippedHook = item.id;
+  else if (item.cat === 'bait') fishState.equippedBait = item.id;
+  else if (item.cat === 'line') fishState.equippedLine = item.id;
+  else if (item.cat === 'rod') fishState.equippedRod = item.id;
+  else if (item.cat === 'outfit') fishState.equippedOutfit = item.id;
+  saveFishState();
+  updateFishUI();
+  updateFisherCharacter();
+}
+
+function initFishingGame() {
+  loadFishState();
+  buildCharPicker();
+  updateFisherCharacter();
+  buildFishLessonPicker();
+  addSwimmingFish();
+  updateFishUI();
+  document.getElementById('pondScene').addEventListener('click', () => startCast());
+  document.getElementById('fqNextBtn').addEventListener('click', () => nextFishQuizQuestion());
+  document.getElementById('frContinueBtn').addEventListener('click', () => closeFishResult());
+  document.getElementById('sellAllBtn').addEventListener('click', () => sellAllFish());
+}
+
+// ======================== MODE SWITCHER ==========================
+
+let currentMode = 'vocab';
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('vocabGame').classList.toggle('active', mode === 'vocab');
+  document.getElementById('fishingGame').classList.toggle('active', mode === 'fishing');
+  document.querySelectorAll('#modeSwitcher button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  if (mode === 'fishing') {
+    addSwimmingFish();
+    updateFishUI();
+  } else {
+    if (fishGamePhase === 'waiting' || fishGamePhase === 'casting' || fishGamePhase === 'bite') {
+      fishGamePhase = 'idle';
+      document.getElementById('fishBobber').classList.remove('visible', 'bite');
+      document.getElementById('castPrompt').style.display = '';
+      animateLine('hide');
+    }
+  }
+}
+
+function initModeSwitcher() {
+  document.querySelectorAll('#modeSwitcher button').forEach(b => {
+    b.addEventListener('click', () => switchMode(b.dataset.mode));
+  });
+}
+
+// ================================================================
+
 function init() {
   // Hide the "open in Safari" banner — JS is running, so we're in a real browser.
   const ql = document.getElementById('quicklookBanner');
@@ -2032,6 +3438,9 @@ function init() {
       if (e.target === overlay) hideCelebration();
     });
   }
+
+  // Mode switcher + fishing game wiring.
+  initModeSwitcher();
 
   // Sorting Hat button wiring.
   document.querySelectorAll('#sortingHat .house-btn').forEach(b => {
