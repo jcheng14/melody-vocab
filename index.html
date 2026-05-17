@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Melody's Vocabulary Trainer</title>
+<title>Word Quest — English Learning Game</title>
 <style>
   :root {
     --bg: #f7f5ef;
@@ -898,6 +898,19 @@
   .profile-btn .pf-icon { font-size: 30px; line-height: 1; }
   .profile-btn .pf-text b { display: block; font-size: 17px; }
   .profile-btn .pf-text .pf-sub { color: var(--soft); font-size: 13px; }
+  .new-player-form { margin-top: 6px; display: flex; flex-direction: column; gap: 10px; }
+  .new-player-form input {
+    border: 2px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 12px 14px; border-radius: 12px; font-size: 16px; font-family: inherit;
+  }
+  .new-player-form input:focus { border-color: var(--accent); outline: none; }
+  .new-player-form select {
+    border: 2px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 10px 12px; border-radius: 12px; font-size: 14px; font-family: inherit;
+  }
+  .new-player-form .form-row { display: flex; gap: 8px; }
+  .new-player-form .form-row .btn { flex: 1; }
+  .profile-divider { text-align: center; color: var(--soft); font-size: 13px; margin: 4px 0; }
   .house-options {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1601,7 +1614,7 @@
 
   <header class="wiz-header">
     <div class="title-block">
-      <h1 id="siteTitle">Wizarding Word Quest 🪄</h1>
+      <h1 id="siteTitle">Word Quest 🪄</h1>
       <div class="profile-badge" id="profileBadge">
         <span class="profile-pill" id="profilePill"></span>
         <button id="switchProfileBtn" class="link-btn" title="Switch player">Switch</button>
@@ -2657,6 +2670,7 @@ function showProfilePicker() {
   const opts = document.getElementById('profileOptions');
   opts.innerHTML = '';
   for (const id of Object.keys(CORPORA)) {
+    if (CORPORA[id]._guest) continue;
     const p = CORPORA[id];
     const btn = document.createElement('button');
     btn.className = 'profile-btn';
@@ -2664,7 +2678,34 @@ function showProfilePicker() {
     btn.onclick = () => onProfilePicked(id);
     opts.appendChild(btn);
   }
+  const divider = document.createElement('div');
+  divider.className = 'profile-divider';
+  divider.textContent = '— or —';
+  opts.appendChild(divider);
+  const form = document.createElement('div');
+  form.className = 'new-player-form';
+  form.innerHTML = `<input type="text" id="newPlayerName" placeholder="Enter your name" maxlength="20" autocomplete="off"><select id="newPlayerLevel"><option value="melody">📚 Advanced (SSAT)</option><option value="max">🌱 Beginner (Grade 2-3)</option></select><div class="form-row"><button class="btn primary" id="newPlayerGo">Start Playing →</button></div>`;
+  opts.appendChild(form);
   overlay.classList.remove('hidden');
+  document.getElementById('newPlayerGo').onclick = createGuestProfile;
+  document.getElementById('newPlayerName').addEventListener('keydown', e => { if (e.key === 'Enter') createGuestProfile(); });
+}
+
+function createGuestProfile() {
+  const name = (document.getElementById('newPlayerName').value || '').trim();
+  if (!name) { document.getElementById('newPlayerName').focus(); return; }
+  const level = document.getElementById('newPlayerLevel').value;
+  const source = CORPORA[level];
+  const guestId = 'guest_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  CORPORA[guestId] = {
+    name: name,
+    icon: '🌟',
+    subtitle: source.subtitle,
+    lists: source.lists,
+    data: source.data,
+    _guest: true,
+  };
+  onProfilePicked(guestId);
 }
 
 function onProfilePicked(id) {
